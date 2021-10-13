@@ -1,0 +1,34 @@
+﻿@model ChapmanUniversity1._0.Models.Faculty
+
+
+<h4>Faculty Login</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Login">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="FacultyUserName" class="control-label"></label>
+                <input asp-for="FacultyUserName" class="form-control" />
+                <span asp-validation-for="FacultyUserName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Password" class="control-label"></label>
+                <input asp-for="Password" class="form-control" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Login" class="btn btn-primary" />
+            </div>
+            @if (TempData.ContainsKey("InvalidFacultyAlert"))
+            {
+        <div class="alert alert-danger" role="alert">Invalid Faculty Id/Password combination</div>
+            }
+        </form>
+    </div>
+</div>
+
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

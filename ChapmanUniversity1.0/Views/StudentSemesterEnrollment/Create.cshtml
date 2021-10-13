@@ -1,0 +1,35 @@
+﻿@model ChapmanUniversity1._0.Models.StudentSemesterEnrollment
+
+@{
+    ViewData["Title"] = "Create";
+}
+<h4>ICourse Enrollment</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Course.CourseName" class="control-label"></label>
+                <select asp-for="Course.Id" class="form-control" asp-items="ViewBag.CourseId"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="Semester.CourseSeason" class="control-label"></label>
+                <select asp-for="Semester.CourseSeason" class="form-control" asp-items="ViewBag.SemesterSeasons"></select>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Register" class="btn btn-primary" />
+                @if (TempData.ContainsKey("CourseEnrollmentSuccessAlert"))
+                {
+        <div class="alert alert-success" role="alert">Enrollment was successful</div>}
+                @if (TempData.ContainsKey("CourseAlreadyRegisteredAlert"))
+                {
+        <div class="alert alert-danger" role="alert">ICourse is already enrolled</div>}
+            </div>
+        </form>
+    </div>
+</div>
+<div>
+    @Html.ActionLink("Back", "Index", "StudentSemesterEnrollment")
+</div>
+

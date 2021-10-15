@@ -29,9 +29,5 @@ namespace ChapmanUniversity1._0.Models
         [Display(Name = "Course Description")]
         [Required]
         public string CourseDescription { get; set; }
-
-
-        public ICollection<StudentSemesterEnrollment> Enrollments { get; set; }
-
     }
 }

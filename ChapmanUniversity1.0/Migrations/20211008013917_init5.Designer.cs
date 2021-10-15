@@ -131,7 +131,7 @@ namespace ChapmanUniversity1._0.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<DateTime>("EnrollmentDate")
+                    b.Property<DateTime>("StudentRegDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("FirstName")

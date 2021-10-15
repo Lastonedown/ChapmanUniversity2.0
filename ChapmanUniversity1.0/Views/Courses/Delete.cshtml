@@ -1,4 +1,4 @@
-﻿@model ChapmanUniversity1._0.Models.Course
+﻿@model ChapmanUniversity1._0.Models.Semester
 
 @{
     ViewData["Title"] = "Delete";
@@ -12,28 +12,34 @@
     <hr />
     <dl class="row">
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.CourseNumber)
+            @Html.DisplayNameFor(model => model.Course.CourseNumber)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.CourseNumber)
+            @Html.DisplayFor(model => model.Course.CourseNumber)
         </dd>
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.CourseName)
+            @Html.DisplayNameFor(model => model.Course.CourseName)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.CourseName)
+            @Html.DisplayFor(model => model.Course.CourseName)
         </dd>
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Credits)
+            @Html.DisplayNameFor(model => model.Course.Credits)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Credits)
+            @Html.DisplayFor(model => model.Course.Credits)
         </dd>
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.CourseDescription)
+            @Html.DisplayNameFor(model => model.Course.CourseDescription)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.CourseDescription)
+            @Html.DisplayFor(model => model.Course.CourseDescription)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.CourseSeason)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.CourseSeason)
         </dd>
     </dl>
     

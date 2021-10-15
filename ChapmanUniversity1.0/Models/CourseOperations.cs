@@ -12,7 +12,7 @@ namespace ChapmanUniversity1._0.Models
         Task<Course> FindCourseById(int? id);
         Task<List<Course>> CourseList();
         Task CreateCourse(Course course);
-        Task UpdateCourse(Course course);
+        Task UpdateCourse(CourseViewModel course);
         Task DeleteCourse(int id);
         bool CourseExists(int courseNumber);
         Task<Course> FindCourse(int courseNumber);
@@ -47,7 +47,7 @@ namespace ChapmanUniversity1._0.Models
             _context.Courses.Add(course);
             return _context.SaveChangesAsync();
         }
-        public Task UpdateCourse(Course course)
+        public Task UpdateCourse(CourseViewModel course)
         {
             _context.Entry(course).State = EntityState.Modified;
             return _context.SaveChangesAsync();

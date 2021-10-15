@@ -16,7 +16,7 @@ namespace ChapmanUniversity1._0.Models
             Task CreateSemester(Semester semester);
             Task UpdateSemester(Semester semester);
             Task DeleteSemester(int id);
-            bool SemesterExists(int courseId, string courseSeason);
+            bool SemesterExists(int courseNumber, string courseSeason);
         }
     public class SemesterOperations : ISemesterOperations
         {
@@ -33,11 +33,7 @@ namespace ChapmanUniversity1._0.Models
             }
             public Task<List<Semester>> SemestersList()
             {
-                var semesterList = _context.Semesters.Include(x => x.Course).ToListAsync();
-
-
-
-            return (semesterList);
+                return _context.Semesters.ToListAsync();
             }
 
             public Task CreateSemester(Semester semester)
@@ -57,7 +53,7 @@ namespace ChapmanUniversity1._0.Models
                 await _context.SaveChangesAsync();
             }
 
-            public bool SemesterExists (int courseId, string courseSeason)
+            public bool SemesterExists(int courseId, string courseSeason)
             {
                 var courseNumberExists = _context.Semesters.Any(e => e.Course.Id == courseId);
 

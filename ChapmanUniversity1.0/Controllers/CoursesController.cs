@@ -126,8 +126,8 @@ namespace ChapmanUniversity1._0.Controllers
         public async Task<IActionResult> Delete(int? id)
         {
             var course = await _courseContext.FindCourseById(id);
-            
-            
+
+
             return View(course);
         }
 

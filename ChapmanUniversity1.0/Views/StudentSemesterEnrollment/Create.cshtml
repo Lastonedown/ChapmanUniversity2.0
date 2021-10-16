@@ -3,7 +3,7 @@
 @{
     ViewData["Title"] = "Create";
 }
-<h4>ICourse Enrollment</h4>
+<h4>Course Enrollment</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
@@ -24,7 +24,10 @@
         <div class="alert alert-success" role="alert">Enrollment was successful</div>}
                 @if (TempData.ContainsKey("CourseAlreadyRegisteredAlert"))
                 {
-        <div class="alert alert-danger" role="alert">ICourse is already enrolled</div>}
+        <div class="alert alert-danger" role="alert">Course is already enrolled</div>}
+                @if (TempData.ContainsKey("SemesterNotAvailable"))
+                {
+                    <div class="alert alert-danger" role="alert">Semester not available</div>}
             </div>
         </form>
     </div>

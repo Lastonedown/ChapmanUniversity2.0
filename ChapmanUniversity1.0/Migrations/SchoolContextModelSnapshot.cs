@@ -124,9 +124,6 @@ namespace ChapmanUniversity1._0.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<DateTime>("StudentRegDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -148,6 +145,9 @@ namespace ChapmanUniversity1._0.Migrations
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("EnrollmentDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("StudentUserName")
                         .IsRequired()
@@ -198,7 +198,7 @@ namespace ChapmanUniversity1._0.Migrations
             modelBuilder.Entity("ChapmanUniversity1._0.Models.StudentSemesterEnrollment", b =>
                 {
                     b.HasOne("ChapmanUniversity1._0.Models.Course", "Course")
-                        .WithMany("Enrollments")
+                        .WithMany()
                         .HasForeignKey("CourseId");
 
                     b.HasOne("ChapmanUniversity1._0.Models.Semester", "Semester")
@@ -206,7 +206,7 @@ namespace ChapmanUniversity1._0.Migrations
                         .HasForeignKey("SemesterId");
 
                     b.HasOne("ChapmanUniversity1._0.Models.Student", "Student")
-                        .WithMany("Enrollments")
+                        .WithMany()
                         .HasForeignKey("StudentId");
 
                     b.Navigation("Course");
@@ -214,16 +214,6 @@ namespace ChapmanUniversity1._0.Migrations
                     b.Navigation("Semester");
 
                     b.Navigation("Student");
-                });
-
-            modelBuilder.Entity("ChapmanUniversity1._0.Models.Course", b =>
-                {
-                    b.Navigation("Enrollments");
-                });
-
-            modelBuilder.Entity("ChapmanUniversity1._0.Models.Student", b =>
-                {
-                    b.Navigation("Enrollments");
                 });
 #pragma warning restore 612, 618
         }

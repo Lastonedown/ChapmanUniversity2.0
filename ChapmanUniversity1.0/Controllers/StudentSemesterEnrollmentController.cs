@@ -17,16 +17,49 @@ namespace ChapmanUniversity1._0.Controllers
 
         private readonly IStudentSemesterEnrollmentOperations _enrollmentContext;
 
-        public StudentSemesterEnrollmentController(IStudentSemesterEnrollmentOperations enrollmentContext)
+        private readonly ICourseOperations _courseContext;
+
+        private readonly IStudentOperations _studentContext;
+
+        private readonly ISemesterOperations _semesterContext;
+
+        public StudentSemesterEnrollmentController(IStudentSemesterEnrollmentOperations enrollmentContext, ICourseOperations courseContext,IStudentOperations studentContext,ISemesterOperations semesterContext)
         {
             _enrollmentContext = enrollmentContext;
+            _courseContext = courseContext;
+            _studentContext = studentContext;
+            _semesterContext = semesterContext;
         }
 
         // GET: StudentCourseEnrollments
-        public ActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            TempData.Keep("studentId");
+            var studentId = (int)TempData["studentId"];
 
-            return View();
+
+            var studentEnrollments = await _enrollmentContext.StudentSemesterEnrollmentList();
+
+            List<StudentSemesterEnrollment> enrollmentList = new List<StudentSemesterEnrollment>();
+
+            foreach (var t in studentEnrollments)
+            {
+                if (studentId == t.Student.Id)
+                {
+                    StudentSemesterEnrollment newStudentSemesterEnrollment = new StudentSemesterEnrollment()
+                    {
+                        Course = t.Course,
+                        Student = t.Student,
+                        Semester = t.Semester,
+                        Id = t.Id
+                    };
+                    enrollmentList.Add(newStudentSemesterEnrollment);
+                }
+
+                return View(enrollmentList);
+            }
+
+            return View(enrollmentList);
         }
 
         public async Task<IActionResult> Details(int? id)
@@ -35,10 +68,10 @@ namespace ChapmanUniversity1._0.Controllers
             return View();
         }
 
-        public ActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["CourseId"] = new SelectList(_enrollmentContext.StudentSemesterEnrollmentList().Result, "Id", "CourseName");
-            List<String> seasonList = new List<string>(Enum.GetNames(typeof(Seasons)));
+            ViewData["CourseId"] = new SelectList(await _courseContext.CourseList(), "Id", "CourseName");
+            List<string> seasonList = new List<string>(Enum.GetNames(typeof(Seasons)));
             ViewData["SemesterSeasons"] = new SelectList(seasonList);
 
             return View();
@@ -48,7 +81,27 @@ namespace ChapmanUniversity1._0.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(StudentSemesterEnrollment studentSemesterEnrollment)
         {
-            return View();
+            TempData.Remove("SemesterNotAvailable");
+            var studentId = (int)TempData["studentId"];
+            var course = await _courseContext.FindCourseById(studentSemesterEnrollment.Course.Id);
+            var student = await _studentContext.FindStudent(studentId);
+            var semester = await _semesterContext.FindSemester(course.Id, studentSemesterEnrollment.Semester.CourseSeason);
+
+            if (semester == null)
+            {
+                TempData.Add("SemesterNotAvailable",null);
+                return RedirectToAction(nameof(Create));
+            }
+            StudentSemesterEnrollment newEnrollment = new StudentSemesterEnrollment()
+            {
+                Course = course,
+                Semester = semester,
+                Student = student
+            };
+
+            await _enrollmentContext.CreateStudentSemesterEnrollment(newEnrollment);
+            TempData.Keep("studentId");
+            return RedirectToAction(nameof(Create));
         }
 
         

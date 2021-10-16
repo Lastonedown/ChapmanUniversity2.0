@@ -72,7 +72,7 @@ namespace ChapmanUniversity1._0.Controllers
                 student.PhoneNumber = student1.PhoneNumber;
                 student.EmailAddress = student1.EmailAddress;
                 student.DateOfBirth = student1.DateOfBirth;
-                student.StudentRegDate = DateTime.Now;
+                student.EnrollmentDate = DateTime.Now;
                 student.Password = encryptedPassword;
 
 

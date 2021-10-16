@@ -25,6 +25,7 @@ namespace ChapmanUniversity1._0.Controllers
         // GET: Semesters
         public async Task<IActionResult> Index()
         {
+
             var semesterList = await _semestersContext.SemestersList();
 
 

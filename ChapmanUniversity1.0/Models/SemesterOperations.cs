@@ -11,7 +11,7 @@ namespace ChapmanUniversity1._0.Models
     public interface ISemesterOperations
         {
             Task<Semester> FindSemesterById(int? id);
-            Semester FindSemester(int id, string semesterSeason);
+            Task<Semester> FindSemester(int id, string semesterSeason);
             Task<List<Semester>> SemestersList();
             Task CreateSemester(Semester semester);
             Task UpdateSemester(Semester semester);
@@ -70,9 +70,9 @@ namespace ChapmanUniversity1._0.Models
                 return false;
             }
 
-        public Semester FindSemester(int courseId, string semesterSeason)
+        public async Task<Semester> FindSemester(int courseId, string semesterSeason)
         {
-            foreach (var semester in SemestersList().Result)
+            foreach (var semester in await SemestersList())
             {
                 if (semester.Course.Id == courseId && semester.CourseSeason == semesterSeason)
                 {

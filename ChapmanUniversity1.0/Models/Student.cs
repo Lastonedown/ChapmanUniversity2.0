@@ -45,7 +45,7 @@ namespace ChapmanUniversity1._0.Models
         [Display(Name = "Student Registration Date")]
         [Required]
         [DataType(DataType.Date)]
-        public DateTime StudentRegDate { get; set; }
+        public DateTime EnrollmentDate { get; set; }
 
         [Display(Name = "Active Y/N")]
         public string IsStudentActive { get; set; }

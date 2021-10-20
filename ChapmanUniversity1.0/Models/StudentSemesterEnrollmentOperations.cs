@@ -40,9 +40,9 @@ namespace ChapmanUniversity1._0.Models
         }
 
 
-        public Task<List<StudentSemesterEnrollment>> StudentSemesterEnrollmentList()
+        public async Task<List<StudentSemesterEnrollment>> StudentSemesterEnrollmentList()
         {
-            return _context.StudentCourseEnrollments.Include(d => d.Student).Include(d => d.Semester).Include(d => d.Course).ToListAsync(); ;
+            return await _context.StudentCourseEnrollments.Include(d => d.Student).Include(d => d.Semester).Include(d => d.Course).ToListAsync(); ;
         }
 
         public Task CreateStudentSemesterEnrollment(StudentSemesterEnrollment enrollment)

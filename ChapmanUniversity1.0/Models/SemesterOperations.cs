@@ -11,12 +11,12 @@ namespace ChapmanUniversity1._0.Models
     public interface ISemesterOperations
         {
             Task<Semester> FindSemesterById(int? id);
-            Semester FindSemester(int id, string semesterSeason);
+            Task<Semester> FindSemester(int id, string semesterSeason);
             Task<List<Semester>> SemestersList();
             Task CreateSemester(Semester semester);
             Task UpdateSemester(Semester semester);
             Task DeleteSemester(int id);
-            bool SemesterExists(int courseNumber, string courseSeason);
+            bool SemesterExists(int courseId, string courseSeason);
         }
     public class SemesterOperations : ISemesterOperations
         {
@@ -33,7 +33,11 @@ namespace ChapmanUniversity1._0.Models
             }
             public Task<List<Semester>> SemestersList()
             {
-                return _context.Semesters.ToListAsync();
+                var semesterList = _context.Semesters.Include(x => x.Course).ToListAsync();
+
+
+
+            return (semesterList);
             }
 
             public Task CreateSemester(Semester semester)
@@ -53,7 +57,7 @@ namespace ChapmanUniversity1._0.Models
                 await _context.SaveChangesAsync();
             }
 
-            public bool SemesterExists(int courseId, string courseSeason)
+            public bool SemesterExists (int courseId, string courseSeason)
             {
                 var courseNumberExists = _context.Semesters.Any(e => e.Course.Id == courseId);
 
@@ -66,9 +70,9 @@ namespace ChapmanUniversity1._0.Models
                 return false;
             }
 
-        public Semester FindSemester(int courseId, string semesterSeason)
+        public async Task<Semester> FindSemester(int courseId, string semesterSeason)
         {
-            foreach (var semester in SemestersList().Result)
+            foreach (var semester in await SemestersList())
             {
                 if (semester.Course.Id == courseId && semester.CourseSeason == semesterSeason)
                 {

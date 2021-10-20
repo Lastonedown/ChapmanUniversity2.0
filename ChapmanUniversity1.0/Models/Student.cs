@@ -42,12 +42,10 @@ namespace ChapmanUniversity1._0.Models
         [DataType(DataType.PhoneNumber)]
         public string PhoneNumber { get; set; }
 
-        [Display(Name = "Student Enrollment Date")]
+        [Display(Name = "Student Registration Date")]
         [Required]
         [DataType(DataType.Date)]
         public DateTime EnrollmentDate { get; set; }
-
-        public ICollection<StudentSemesterEnrollment> Enrollments { get; set; }
 
         [Display(Name = "Active Y/N")]
         public string IsStudentActive { get; set; }

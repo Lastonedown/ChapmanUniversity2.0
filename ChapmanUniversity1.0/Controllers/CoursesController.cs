@@ -14,61 +14,71 @@ namespace ChapmanUniversity1._0.Controllers
     {
         private readonly ICourseOperations _courseContext;
 
-        private readonly ISemesterOperations _semesterContext;
 
-        public CoursesController(ICourseOperations courseContext,ISemesterOperations semesterContext)
+
+        public CoursesController(ICourseOperations courseContext)
         {
             _courseContext = courseContext;
-            _semesterContext = semesterContext;
         }
 
-        public IActionResult Index()
+        public async Task <IActionResult> Index()
         {
+            var courseList = await _courseContext.CourseList();
 
-            var semesters = _semesterContext.SemestersList().Result;
-
-            if (semesters.Count == 0)
+            List<Course> indexCourseList = new List<Course>();
+            foreach (var course in courseList)
             {
-                return View(semesters);
+                {
+                    Course newCourse = new Course()
+                    {
+                        CourseNumber = course.CourseNumber,
+                        CourseName = course.CourseName,
+                        CourseDescription = course.CourseDescription,
+                        Credits = course.Credits,
+                        Id = course.Id
+
+                    };
+                  indexCourseList.Add(newCourse);
+                }
+
             }
-
-
-            return View(semesters);
+            return View(indexCourseList);
         }
 
-        public ActionResult Details(int? id)
+        public async Task<ActionResult> Details(int? id)
         {
+            var course = await _courseContext.FindCourseById(id);
 
-            return View();
+            Course courseDetails = new Course()
+           {
+               CourseNumber = course.CourseNumber,
+               CourseDescription = course.CourseDescription,
+               CourseName = course.CourseName,
+               Credits = course.Credits,
+               Id = course.Id
+           };
+           return View(courseDetails);
         }
 
         public ActionResult Create()
-        { 
-            List<String> seasonList = new List<string>(Enum.GetNames(typeof(Seasons)));
-            ViewData["SemesterSeasons"] = new SelectList(seasonList);
+        {
             return View();
         }
 
-    
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(CourseViewModel course)
+        public async Task<IActionResult> Create(Course course)
         {
             TempData.Remove("CourseCreatedSuccessfullyAlert");
             TempData.Remove("CourseAlreadyCreatedAlert");
 
-            List<String> seasonList = new List<string>(Enum.GetNames(typeof(Seasons)));
-            ViewData["SemesterSeasons"] = new SelectList(seasonList);
-
             var courseExists = _courseContext.CourseExists(course.CourseNumber);
-            var semesterExists = _semesterContext.SemesterExists(course.CourseNumber, course.CourseSeason);
 
-            Semester newSemester = new();
-            
 
-            if (!courseExists && !semesterExists)
+            if (!courseExists)
             {
-                Course  newCourse = new Course()
+                Course newCourse = new Course()
                 {
                     CourseNumber = course.CourseNumber,
                     CourseName = course.CourseName,
@@ -77,111 +87,55 @@ namespace ChapmanUniversity1._0.Controllers
                 };
 
 
+                await _courseContext.CreateCourse(newCourse);
 
-                newSemester.Course = newCourse;
-                newSemester.CourseSeason = course.CourseSeason;
-
-                await _semesterContext.CreateSemester(newSemester);
-                return View();
-            }
-            if (!semesterExists)
-            {
-                TempData.Remove("CourseCreatedSuccessfullyAlert");
                 TempData.Add("CourseCreatedSuccessfullyAlert", null);
+
                 return View();
             }
+
             TempData.Add("CourseAlreadyCreatedAlert", null);
             return View();
         }
 
-        public async Task<IActionResult> Edit(int? id)
+        public ActionResult Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var semester = await _semesterContext.FindSemesterById(id);
-            
-            CourseViewModel editedCourse = new CourseViewModel()
-            {
-                CourseNumber = semester.Course.CourseNumber,
-                CourseName = semester.Course.CourseName,
-                CourseDescription = semester.Course.CourseDescription,
-                Credits = semester.Course.Credits,
-                CourseSeason = semester.CourseSeason,
-            };
-            return View(editedCourse);
+            return View();
         }
 
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(CourseViewModel course){
+        public async Task<IActionResult> Edit(Course course)
+        {
 
-            if (ModelState.IsValid)
+            Course editedCourse = new Course()
             {
-                try
-                {
-                    Course editedCourse = new Course
-                    {
-                        CourseNumber = course.CourseNumber,
-                        CourseName = course.CourseName,
-                        CourseDescription = course.CourseDescription,
-                        Credits = course.Credits,
-                        Id = course.Id
-                    };
+                CourseName = course.CourseName,
+                CourseDescription = course.CourseDescription,
+                CourseNumber = course.CourseNumber,
+                Credits = course.Credits,
+                Id = course.Id
+            };
 
-                    Semester editedSemester = new Semester()
-                    {
-                        Course = editedCourse,
-                        CourseSeason = course.CourseSeason
-                    };
-
-                   
-
-                    await _semesterContext.UpdateSemester(editedSemester);
-                    await _courseContext.UpdateCourse(course);
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!_courseContext.CourseExists(course.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(course);
+                await _courseContext.UpdateCourse(editedCourse);
+                return RedirectToAction(nameof(Edit));
         }
+
 
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            var course = await _courseContext.FindCourseById(id);
 
-            var semester = await _semesterContext.FindSemesterById(id);
-            if (semester == null)
-            {
-                return NotFound();
-            }
 
-            return View(semester);
+            return View(course);
         }
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            
-            await _semesterContext.DeleteSemester(id);
-            
+            await _courseContext.DeleteCourse(id);
             return RedirectToAction(nameof(Index));
         }
 

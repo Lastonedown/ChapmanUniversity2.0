@@ -7,145 +7,139 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ChapmanUniversity1._0.Data;
 using ChapmanUniversity1._0.Models;
+using ChapmanUniversity1._0.Queries;
 
 namespace ChapmanUniversity1._0.Controllers
 {
     public class SemestersController : Controller
     {
-        private readonly ISemesterOperations _semestersContext;
-        private readonly ICourseOperations _courseContext;
+        private UnitOfWork _unitOfWork = new UnitOfWork(new SchoolContext());
 
-        public SemestersController(ISemesterOperations semesterContext,ICourseOperations courseContext )
-        {
-            _semestersContext = semesterContext;
-            _courseContext = courseContext;
-        }
+        //        // GET: Semesters
+        //        //public async Task<IActionResult> Index()
+        //        //{
 
-
-        // GET: Semesters
-        public async Task<IActionResult> Index()
-        {
-
-            var semesterList = await _semestersContext.SemestersList();
+        //        //    var semesterList = await _semestersContext.SemestersList();
 
 
-            return View(semesterList);
-        }
+        //        //    return View(semesterList);
+        //        //}
 
-        // GET: Semesters/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
+        //        //// GET: Semesters/Details/5
+        //        //public async Task<IActionResult> Details(int? id)
+        //        //{
+        //        //    if (id == null)
+        //        //    {
+        //        //        return NotFound();
+        //        //    }
 
-            var semester = await _semestersContext.FindSemesterById(id);
-            if (semester == null)
-            {
-                return NotFound();
-            }
+        //        //    var semester = await _semestersContext.FindSemesterById(id);
+        //        //    if (semester == null)
+        //        //    {
+        //        //        return NotFound();
+        //        //    }
 
-            return View(semester);
-        }
+        //        //    return View(semester);
+        //        //}
 
-        // GET: Semesters/Create
-        public async Task<IActionResult> Create(int? id)
-        {
-            List<string> seasonsList = new List<string>(Enum.GetNames(typeof(Seasons)));
-            ViewData["Seasons"] = new SelectList(seasonsList);
- 
-            var foundCourse = await _courseContext.FindCourseById(id);
+        //        // GET: Semesters/Create
+        //        //public async Task<IActionResult> Create(int id)
+        //        //{
+        //        //    List<string> seasonsList = new List<string>(Enum.GetNames(typeof(Seasons)));
+        //        //    ViewData["Seasons"] = new SelectList(seasonsList);
 
-            Semester semester = new Semester()
-            {
-                Course = foundCourse
-            };
+        //        //    var foundCourse = await _semestersContext.FindSemesterById(id);
 
-            return View(semester);
-        }
+        //        //    Semester semester = new Semester()
+        //        //    {
+        //        //        Course = foundCourse
+        //        //    };
 
-        
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Semester semester)
-        {
-            List<string> seasonsList = new List<string>(Enum.GetNames(typeof(Seasons)));
-            ViewData["Seasons"] = new SelectList(seasonsList);
+        //        //    return View(semester);
+        //        //}
 
-            var foundCourse = await _courseContext.FindCourseById(semester.Course.Id);
 
-            Semester newSemester = new Semester()
-            {
-                Course = foundCourse,
-                CourseSeason = semester.CourseSeason
-            };
+        //        //[HttpPost]
+        //        //[ValidateAntiForgeryToken]
+        //        //public async Task<IActionResult> Create(Semester semester)
+        //        //{
+        //        //    List<string> seasonsList = new List<string>(Enum.GetNames(typeof(Seasons)));
+        //        //    ViewData["Seasons"] = new SelectList(seasonsList);
 
-            var semesterExists = _semestersContext.SemesterExists(newSemester.Course.Id, newSemester.CourseSeason);
-            if (!semesterExists)
-            { 
-                await _semestersContext.CreateSemester(newSemester);
-                return RedirectToAction(nameof(Create));
-            }
-            
-            return RedirectToAction(nameof(Create));
-        }
+        //        //    var foundCourse = await .FindCourseById(semester.Course.Id);
 
-        // GET: Semesters/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
+        //        //    Semester newSemester = new Semester()
+        //        //    {
+        //        //        Course = foundCourse,
+        //        //        CourseSeason = semester.CourseSeason
+        //        //    };
 
-            var semester = await _semestersContext.FindSemesterById(id);
-            if (semester == null)
-            {
-                return NotFound();
-            }
-            return View(semester);
-        }
+        //        //    var semesterExists = _semestersContext.SemesterExists(newSemester.Course.Id, newSemester.CourseSeason);
+        //        //    if (!semesterExists)
+        //        //    { 
+        //        //        await _semestersContext.CreateSemester(newSemester);
+        //        //        return RedirectToAction(nameof(Create));
+        //        //    }
 
-        // POST: Semesters/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,CourseSeason")] Semester semester)
-        {
-            if (id != semester.Id)
-            {
-                return NotFound();
-            }
+        //        //    return RedirectToAction(nameof(Create));
+        //        //}
 
-            return View();
-        }
+        //        // GET: Semesters/Edit/5
+        //        //public async Task<IActionResult> Edit(int? id)
+        //        //{
+        //        //    if (id == null)
+        //        //    {
+        //        //        return NotFound();
+        //        //    }
 
-        // GET: Semesters/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
+        //        //    var semester = await _semestersContext.FindSemesterById(id);
+        //        //    if (semester == null)
+        //        //    {
+        //        //        return NotFound();
+        //        //    }
+        //        //    return View(semester);
+        //        //}
 
-            var semester = await _semestersContext.FindSemesterById(id);
-            if (semester == null)
-            {
-                return NotFound();
-            }
+        //        // POST: Semesters/Edit/5
+        //        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        //        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        //        [HttpPost]
+        //        [ValidateAntiForgeryToken]
+        //        public async Task<IActionResult> Edit(int id, [Bind("Id,CourseSeason")] Semester semester)
+        //        {
+        //            if (id != semester.Id)
+        //            {
+        //                return NotFound();
+        //            }
 
-            return View(semester);
-        }
+        //            return View();
+        //        }
 
-        // POST: Semesters/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            await _semestersContext.DeleteSemester(id);
-            return RedirectToAction(nameof(Index));
-        }
+        //        // GET: Semesters/Delete/5
+        //        public async Task<IActionResult> Delete(int? id)
+        //        {
+        //            if (id == null)
+        //            {
+        //                return NotFound();
+        //            }
+
+        //            var semester = await _semestersContext.FindSemesterById(id);
+        //            if (semester == null)
+        //            {
+        //                return NotFound();
+        //            }
+
+        //            return View(semester);
+        //        }
+
+        //        // POST: Semesters/Delete/5
+        //        [HttpPost, ActionName("Delete")]
+        //        [ValidateAntiForgeryToken]
+        //        public async Task<IActionResult> DeleteConfirmed(int id)
+        //        {
+        //            await _semestersContext.DeleteSemester(id);
+        //            return RedirectToAction(nameof(Index));
+        //        }
+        //    }
     }
 }

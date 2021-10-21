@@ -98,6 +98,7 @@ namespace ChapmanUniversity1._0.Controllers
 
         public ActionResult Login()
         {
+            TempData.Remove("FacultyId");
             TempData.Remove("StudentId");
             return View();
         }
@@ -107,7 +108,7 @@ namespace ChapmanUniversity1._0.Controllers
         public ActionResult Login(StudentLogin studentLogin)
         {
             var student = ValidateStudentLogin(studentLogin.UserName.Trim(), studentLogin.Password);
-
+            
             TempData.Clear();
             if (student == null)
             {

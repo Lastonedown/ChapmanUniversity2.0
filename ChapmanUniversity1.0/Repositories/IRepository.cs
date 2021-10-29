@@ -8,9 +8,14 @@ using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
 
 namespace ChapmanUniversity1._0.Repositories
 {
-    public interface IRepository<T> where T : class
+    public interface IRepository<TEntity> where TEntity : class
     {
-        T GetById(int id);
-        Task<IEnumerable<T>> GetAll();
+        TEntity GetById(int id);
+        IEnumerable<TEntity> GetAll();
+        IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> predicate);
+        void Add(TEntity entity);
+        void Remove(TEntity entity);
+
+
     }
 }

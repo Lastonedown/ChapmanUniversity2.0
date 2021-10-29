@@ -18,107 +18,86 @@ namespace ChapmanUniversity1._0.Controllers
 
     public class CoursesController : Controller
     {
-        private UnitOfWork _unitOfWork = new UnitOfWork(new SchoolContext());
+        private readonly UnitOfWork _unitOfWork = new(new SchoolContext());
 
         public IActionResult Index()
         {
-            var courses =  _unitOfWork.Courses.GetAll().Result;
+            TempData.Remove("CourseCreatedSuccessfullyAlert");
+            TempData.Remove("CourseAlreadyCreatedAlert");
+            var courses =   _unitOfWork.Courses.GetAll();
            
            return View(courses);
         }
 
-        //public async Task<ActionResult> Details(int id)
-        //{
+        public IActionResult Details(int id)
+        {
+            var course = _unitOfWork.Courses.GetById(id);
+            
+            return View(course);
+        }
 
-        //    Course courseDetails = new Course()
-        //   {
-        //       CourseNumber = course.CourseNumber,
-        //       CourseDescription = course.CourseDescription,
-        //       CourseName = course.CourseName,
-        //       Credits = course.Credits,
-        //       Id = course.Id
-        //   };
-        //   return View(courseDetails);
-        //}
-
-        public ActionResult Create()
+        public IActionResult Create()
         {
             return View();
         }
 
 
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> Create(Course course)
-        //{
-        //    TempData.Remove("CourseCreatedSuccessfullyAlert");
-        //    TempData.Remove("CourseAlreadyCreatedAlert");
-
-        //    var courseExists = _courseContext.CourseExists(course.CourseNumber);
-
-
-        //    if (!courseExists)
-        //    {
-        //        Course newCourse = new Course()
-        //        {
-        //            CourseNumber = course.CourseNumber,
-        //            CourseName = course.CourseName,
-        //            CourseDescription = course.CourseDescription,
-        //            Credits = course.Credits
-        //        };
-
-
-        //        await _courseContext.CreateCourse(newCourse);
-
-        //        TempData.Add("CourseCreatedSuccessfullyAlert", null);
-
-        //        return View();
-        //    }
-
-        //    TempData.Add("CourseAlreadyCreatedAlert", null);
-        //    return View();
-        //}
-
-        public ActionResult Edit(int? id)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Create(Course course)
         {
-            return View();
+            TempData.Remove("CourseCreatedSuccessfullyAlert");
+            TempData.Remove("CourseAlreadyCreatedAlert");
+
+            var courseExists = _unitOfWork.Courses.CourseExists(course);
+
+
+            if (!courseExists)
+            {
+                 _unitOfWork.Courses.Add(course); 
+                _unitOfWork.Complete();
+                _unitOfWork.Dispose();
+                TempData.Add("CourseCreatedSuccessfullyAlert", null);
+
+                return RedirectToAction(nameof(Create));
+            }
+
+            TempData.Add("CourseAlreadyCreatedAlert", null);
+            return RedirectToAction(nameof(Create));
+        }
+
+        public IActionResult Edit(int id)
+        {
+            var course =  _unitOfWork.Courses.GetById(id);
+            return View(course);
         }
 
 
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> Edit(Course course)
-        //{
-
-        //    Course editedCourse = new Course()
-        //    {
-        //        CourseName = course.CourseName,
-        //        CourseDescription = course.CourseDescription,
-        //        CourseNumber = course.CourseNumber,
-        //        Credits = course.Credits,
-        //        Id = course.Id
-        //    };
-
-        //        await _courseContext.UpdateCourse(editedCourse);
-        //        return RedirectToAction(nameof(Edit));
-        //}
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Edit(Course course)
+        {
+            
+            _unitOfWork.Complete();
+            return RedirectToAction(nameof(Edit));
+        }
 
 
-        //public async Task<IActionResult> Delete(int id)
-        //{
-        //    var course = await _courseContext.FindCourseById(id);
+        public IActionResult Delete(int id)
+        {
+            var course = _unitOfWork.Courses.GetById(id);
+            return View(course);
+        }
 
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteConfirmed(Course course)
+        {
 
-        //    return View(course);
-        //}
-
-        //[HttpPost, ActionName("Delete")]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> DeleteConfirmed(int id)
-        //{
-        //    await _courseContext.DeleteCourse(id);
-        //    return RedirectToAction(nameof(Index));
-        //}
+            _unitOfWork.Courses.Remove(course);
+            _unitOfWork.Complete();
+            return RedirectToAction(nameof(Index));
+        }
 
     }
 }

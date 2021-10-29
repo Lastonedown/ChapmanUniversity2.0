@@ -23,6 +23,6 @@ namespace ChapmanUniversity1._0.Models
         [Required]
         public string CourseSeason { get; set; }
 
-        public Course Course { get; set; }
+        public  Course Course { get; set; }
     }
 }

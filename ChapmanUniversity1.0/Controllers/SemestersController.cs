@@ -13,133 +13,101 @@ namespace ChapmanUniversity1._0.Controllers
 {
     public class SemestersController : Controller
     {
-        private UnitOfWork _unitOfWork = new UnitOfWork(new SchoolContext());
+        private readonly UnitOfWork _unitOfWork = new UnitOfWork(new SchoolContext());
 
-        //        // GET: Semesters
-        //        //public async Task<IActionResult> Index()
-        //        //{
+        public IActionResult Index()
+        {
 
-        //        //    var semesterList = await _semestersContext.SemestersList();
-
-
-        //        //    return View(semesterList);
-        //        //}
-
-        //        //// GET: Semesters/Details/5
-        //        //public async Task<IActionResult> Details(int? id)
-        //        //{
-        //        //    if (id == null)
-        //        //    {
-        //        //        return NotFound();
-        //        //    }
-
-        //        //    var semester = await _semestersContext.FindSemesterById(id);
-        //        //    if (semester == null)
-        //        //    {
-        //        //        return NotFound();
-        //        //    }
-
-        //        //    return View(semester);
-        //        //}
-
-        //        // GET: Semesters/Create
-        //        //public async Task<IActionResult> Create(int id)
-        //        //{
-        //        //    List<string> seasonsList = new List<string>(Enum.GetNames(typeof(Seasons)));
-        //        //    ViewData["Seasons"] = new SelectList(seasonsList);
-
-        //        //    var foundCourse = await _semestersContext.FindSemesterById(id);
-
-        //        //    Semester semester = new Semester()
-        //        //    {
-        //        //        Course = foundCourse
-        //        //    };
-
-        //        //    return View(semester);
-        //        //}
+            var semesterList =  _unitOfWork.Semesters.GetAll();
 
 
-        //        //[HttpPost]
-        //        //[ValidateAntiForgeryToken]
-        //        //public async Task<IActionResult> Create(Semester semester)
-        //        //{
-        //        //    List<string> seasonsList = new List<string>(Enum.GetNames(typeof(Seasons)));
-        //        //    ViewData["Seasons"] = new SelectList(seasonsList);
+            return View(semesterList);
+        }
+        public IActionResult Details(int id)
+        {
 
-        //        //    var foundCourse = await .FindCourseById(semester.Course.Id);
+            var semester =  _unitOfWork.Semesters.GetById(id);
+            if (semester == null)
+            {
+                return NotFound();
+            }
 
-        //        //    Semester newSemester = new Semester()
-        //        //    {
-        //        //        Course = foundCourse,
-        //        //        CourseSeason = semester.CourseSeason
-        //        //    };
+            return View(semester);
+        }
 
-        //        //    var semesterExists = _semestersContext.SemesterExists(newSemester.Course.Id, newSemester.CourseSeason);
-        //        //    if (!semesterExists)
-        //        //    { 
-        //        //        await _semestersContext.CreateSemester(newSemester);
-        //        //        return RedirectToAction(nameof(Create));
-        //        //    }
+        public IActionResult Create(int id)
+        {
+            List<string> seasonsList = new List<string>(Enum.GetNames(typeof(Seasons)));
+            ViewData["Seasons"] = new SelectList(seasonsList);
+            var course = _unitOfWork.Courses.GetById(id);
 
-        //        //    return RedirectToAction(nameof(Create));
-        //        //}
+            Semester semester = new Semester()
+            {
+                Course = course
+            };
+            return View(semester);
+        }
 
-        //        // GET: Semesters/Edit/5
-        //        //public async Task<IActionResult> Edit(int? id)
-        //        //{
-        //        //    if (id == null)
-        //        //    {
-        //        //        return NotFound();
-        //        //    }
 
-        //        //    var semester = await _semestersContext.FindSemesterById(id);
-        //        //    if (semester == null)
-        //        //    {
-        //        //        return NotFound();
-        //        //    }
-        //        //    return View(semester);
-        //        //}
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Create(Semester semester)
+        {
+            List<string> seasonsList = new List<string>(Enum.GetNames(typeof(Seasons)));
+            ViewData["Seasons"] = new SelectList(seasonsList);
 
-        //        // POST: Semesters/Edit/5
-        //        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        //        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        //        [HttpPost]
-        //        [ValidateAntiForgeryToken]
-        //        public async Task<IActionResult> Edit(int id, [Bind("Id,CourseSeason")] Semester semester)
-        //        {
-        //            if (id != semester.Id)
-        //            {
-        //                return NotFound();
-        //            }
+            var course = _unitOfWork.Courses.GetById(semester.Course.Id);
+            var semesterExists = _unitOfWork.Semesters.SemesterExists(course.Id, semester.CourseSeason);
 
-        //            return View();
-        //        }
+           
+            Semester newSemester = new Semester()
+            {
+                Course = course,
+                CourseSeason = semester.CourseSeason
+            };
+                    _unitOfWork.Semesters.Add(newSemester);
+                    _unitOfWork.Complete();
+                    return RedirectToAction(nameof(Create));
+        }
 
-        //        // GET: Semesters/Delete/5
-        //        public async Task<IActionResult> Delete(int? id)
-        //        {
-        //            if (id == null)
-        //            {
-        //                return NotFound();
-        //            }
+            public IActionResult Edit(int id)
+        {
+            var semester = _unitOfWork.Semesters.GetById(id);
+            if (semester == null)
+            {
+                return NotFound();
+            }
+            return View(semester);
+        }
 
-        //            var semester = await _semestersContext.FindSemesterById(id);
-        //            if (semester == null)
-        //            {
-        //                return NotFound();
-        //            }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Edit(Semester semester)
+        {
+            _unitOfWork.Complete();
+            return RedirectToAction(nameof(Edit));
+        }
 
-        //            return View(semester);
-        //        }
+        public IActionResult Delete(int id)
+        {
 
-        //        // POST: Semesters/Delete/5
-        //        [HttpPost, ActionName("Delete")]
-        //        [ValidateAntiForgeryToken]
-        //        public async Task<IActionResult> DeleteConfirmed(int id)
-        //        {
-        //            await _semestersContext.DeleteSemester(id);
-        //            return RedirectToAction(nameof(Index));
-        //        }
-        //    }
+            var semester = _unitOfWork.Semesters.GetById(id);
+            if (semester == null)
+            {
+                return NotFound();
+            }
+
+            return View(semester);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteConfirmed(int id)
+        {
+            var semester = _unitOfWork.Semesters.GetById(id);
+            _unitOfWork.Semesters.Remove(semester);
+            _unitOfWork.Complete();
+            return RedirectToAction(nameof(Index));
+        }
     }
 }

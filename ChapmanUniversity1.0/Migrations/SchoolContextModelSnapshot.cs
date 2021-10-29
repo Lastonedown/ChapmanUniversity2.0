@@ -124,6 +124,9 @@ namespace ChapmanUniversity1._0.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<DateTime>("EnrollmentDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -145,9 +148,6 @@ namespace ChapmanUniversity1._0.Migrations
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("EnrollmentDate")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("StudentUserName")
                         .IsRequired()

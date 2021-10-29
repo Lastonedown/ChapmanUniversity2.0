@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using ChapmanUniversity1._0.Models;
 using ChapmanUniversity1._0.Repositories;
-using Microsoft.EntityFrameworkCore;
 
 namespace ChapmanUniversity1._0.Queries
 {
@@ -9,8 +11,6 @@ namespace ChapmanUniversity1._0.Queries
     {
         ICourseRepository Courses { get; }
         ISemesterRepository Semesters { get; }
-
-        int SaveChanges();
+        int Complete();
     }
-
 }

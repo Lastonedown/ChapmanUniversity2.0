@@ -9,23 +9,39 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ChapmanUniversity1._0.Repositories
 {
-    public class Repository<T> : IRepository<T> where T : class
+    public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
     {
-        private readonly DbSet<T> _entities;
+        protected readonly DbContext Context;
 
         public Repository(DbContext context)
         {
-            _entities = context.Set<T>();
+            Context = context;
         }
 
-        public T GetById(int id)
+        public TEntity GetById(int id)
         {
-            return _entities.Find(id);
+            return Context.Set<TEntity>().Find(id);
         }
 
-        public async Task<IEnumerable<T>> GetAll()
+
+        public IEnumerable<TEntity> GetAll()
         {
-            return await _entities.ToListAsync();
+            return Context.Set<TEntity>().ToList();
+        }
+
+        public IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> predicate)
+        {
+            return Context.Set<TEntity>().Where(predicate);
+        }
+
+        public void Add(TEntity entity)
+        {
+            Context.Set<TEntity>().Add(entity);
+        }
+
+        public void Remove(TEntity entity)
+        {
+            Context.Set<TEntity>().Remove(entity);
         }
     }
 }

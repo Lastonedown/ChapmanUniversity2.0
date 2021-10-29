@@ -9,7 +9,8 @@ namespace ChapmanUniversity1._0.Repositories
 {
     public interface ISemesterRepository : IRepository<Semester>
     {
-    
+
+        bool SemesterExists(int courseNumber, string courseSeason);
 
     }
 }

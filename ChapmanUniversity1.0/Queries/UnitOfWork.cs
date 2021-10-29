@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using ChapmanUniversity1._0.Controllers;
 using ChapmanUniversity1._0.Data;
 using ChapmanUniversity1._0.Models;
@@ -16,12 +17,12 @@ namespace ChapmanUniversity1._0.Queries
             _context = context;
             Courses = new CourseRepository(_context);
             Semesters = new SemesterRepository(_context);
+
         }
 
-        public ICourseRepository Courses { get;}
-        public ISemesterRepository Semesters { get; }
-        
-        public int SaveChanges()
+        public ICourseRepository Courses { get; private set; }
+        public ISemesterRepository Semesters { get;private set; }
+        public int Complete()
         {
             return _context.SaveChanges();
         }

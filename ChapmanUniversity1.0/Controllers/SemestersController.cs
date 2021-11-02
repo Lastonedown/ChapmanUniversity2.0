@@ -7,13 +7,12 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ChapmanUniversity1._0.Data;
 using ChapmanUniversity1._0.Models;
-using ChapmanUniversity1._0.Queries;
 
 namespace ChapmanUniversity1._0.Controllers
 {
     public class SemestersController : Controller
     {
-        private readonly UnitOfWork _unitOfWork = new UnitOfWork(new SchoolContext());
+        private readonly UnitOfWork.UnitOfWork _unitOfWork = new UnitOfWork.UnitOfWork(new SchoolContext());
 
         public IActionResult Index()
         {

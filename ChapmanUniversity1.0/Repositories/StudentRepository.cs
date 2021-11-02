@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 using ChapmanUniversity1._0.Data;
 using ChapmanUniversity1._0.Models;
@@ -9,29 +8,24 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ChapmanUniversity1._0.Repositories
 {
-    public class CourseRepository :Repository<Course>,ICourseRepository
+    public class StudentRepository : Repository<Student>,IStudentRepository
     {
-
-        public CourseRepository(SchoolContext context) : base(context)
+        public StudentRepository(DbContext context) : base(context)
         {
         }
+
         public SchoolContext SchoolContext => Context as SchoolContext;
 
-        public bool CourseExists(Course course)
+
+        public bool StudentEmailExists(string emailAddress)
         {
-            foreach (var row in SchoolContext.Courses)
+            foreach (var student in SchoolContext.Students )
             {
-                if (row.CourseNumber == course.CourseNumber)
+                if (student.EmailAddress == emailAddress)
                 {
                     return true;
                 }
-
-                return false;
-            }
-
-            return false;
+            }  return false;
         }
-
-      
     }
 }

@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ChapmanUniversity1._0.Data;
 using ChapmanUniversity1._0.Models;
-using ChapmanUniversity1._0.Queries;
 using ChapmanUniversity1._0.Repositories;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
@@ -18,7 +17,7 @@ namespace ChapmanUniversity1._0.Controllers
 
     public class CoursesController : Controller
     {
-        private readonly UnitOfWork _unitOfWork = new(new SchoolContext());
+        private readonly UnitOfWork.UnitOfWork _unitOfWork = new(new SchoolContext());
 
         public IActionResult Index()
         {

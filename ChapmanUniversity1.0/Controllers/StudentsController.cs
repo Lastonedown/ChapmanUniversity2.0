@@ -14,16 +14,9 @@ namespace ChapmanUniversity1._0.Controllers
 {
     public class StudentsController : Controller
     {
-        private readonly SchoolContext _context;
+        private readonly UnitOfWork.UnitOfWork _unitOfWork = new(new SchoolContext());
 
-        public StudentsController(SchoolContext context)
-        {
-            _context = context;
-        }
-
-        // GET: Students/Details/5
-        
-        public async Task<IActionResult> Details()
+        public IActionResult Details()
         {
             if (TempData["StudentId"] == null)
             {
@@ -33,8 +26,8 @@ namespace ChapmanUniversity1._0.Controllers
             var id = (int)TempData["StudentId"]; 
             TempData.Keep("StudentId");
 
-            var student = await _context.Students
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var student = _unitOfWork.Students.GetById(id);
+           
             if (student == null)
             {
                 return NotFound();
@@ -52,13 +45,13 @@ namespace ChapmanUniversity1._0.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(StudentRegistration student1)
+        public IActionResult Create(StudentRegistration student1)
         { 
             TempData.Clear();
             Random random = new Random();
             Student student = new Student();
 
-            if (ModelState.IsValid && !StudentEmailExists(student1.EmailAddress))
+            if (ModelState.IsValid && !_unitOfWork.Students.StudentEmailExists(student1.EmailAddress))
             {
                
                 string studentId = student1.FirstName.Substring(0, 2) + student1.LastName.Substring(0, 4) +
@@ -76,23 +69,18 @@ namespace ChapmanUniversity1._0.Controllers
                 student.Password = encryptedPassword;
 
 
-                _context.Add(student);
-                await _context.SaveChangesAsync();
+                _unitOfWork.Students.Add(student);
+                _unitOfWork.Complete();
                 TempData.Add("RegistrationSuccessAlert",studentId);
                 
                 return RedirectToAction(nameof(Create));
             }
-            if (ModelState.IsValid && StudentEmailExists(student1.EmailAddress))
+            if (ModelState.IsValid && _unitOfWork.Students.StudentEmailExists(student1.EmailAddress))
             {
                 TempData.Add("EmailExistsAlert", student1.EmailAddress);
             }
 
             return View();
-        }
-
-        private bool StudentEmailExists(string emailAddress)
-        {
-            return _context.Students.Any(e => e.EmailAddress == emailAddress);
         }
 
 
@@ -121,7 +109,7 @@ namespace ChapmanUniversity1._0.Controllers
 
         public Student ValidateStudentLogin(string studentId, string password)
         {
-            var students = _context.Students.ToList();
+            var students = _unitOfWork.Students.GetAll();
             bool isPasswordValid = false;
 
             foreach (var t in students)

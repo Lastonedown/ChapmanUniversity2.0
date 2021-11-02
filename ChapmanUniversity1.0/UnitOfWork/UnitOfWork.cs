@@ -1,12 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
-using ChapmanUniversity1._0.Controllers;
-using ChapmanUniversity1._0.Data;
-using ChapmanUniversity1._0.Models;
+﻿using ChapmanUniversity1._0.Data;
 using ChapmanUniversity1._0.Repositories;
-using Microsoft.EntityFrameworkCore;
 
-namespace ChapmanUniversity1._0.Queries
+namespace ChapmanUniversity1._0.UnitOfWork
 {
     public class UnitOfWork : IUnitOfWork
     {
@@ -17,11 +12,13 @@ namespace ChapmanUniversity1._0.Queries
             _context = context;
             Courses = new CourseRepository(_context);
             Semesters = new SemesterRepository(_context);
+            Students = new StudentRepository(_context);
 
         }
 
         public ICourseRepository Courses { get; private set; }
-        public ISemesterRepository Semesters { get;private set; }
+        public ISemesterRepository Semesters { get;private set; } 
+        public  IStudentRepository Students { get; private set; }
         public int Complete()
         {
             return _context.SaveChanges();

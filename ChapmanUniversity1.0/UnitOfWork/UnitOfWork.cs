@@ -13,12 +13,15 @@ namespace ChapmanUniversity1._0.UnitOfWork
             Courses = new CourseRepository(_context);
             Semesters = new SemesterRepository(_context);
             Students = new StudentRepository(_context);
+            StudentEnrollments = new StudentEnrollmentsRepository(_context);
 
         }
 
         public ICourseRepository Courses { get; private set; }
         public ISemesterRepository Semesters { get;private set; } 
         public  IStudentRepository Students { get; private set; }
+        public IStudentEnrollmentsRepository StudentEnrollments { get; private set; }
+
         public int Complete()
         {
             return _context.SaveChanges();

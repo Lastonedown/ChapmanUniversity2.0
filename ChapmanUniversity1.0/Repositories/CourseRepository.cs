@@ -15,6 +15,7 @@ namespace ChapmanUniversity1._0.Repositories
         public CourseRepository(SchoolContext context) : base(context)
         {
         }
+
         public SchoolContext SchoolContext => Context as SchoolContext;
 
         public bool CourseExists(Course course)
@@ -32,6 +33,5 @@ namespace ChapmanUniversity1._0.Repositories
             return false;
         }
 
-      
     }
 }

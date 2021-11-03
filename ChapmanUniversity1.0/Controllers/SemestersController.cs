@@ -17,8 +17,7 @@ namespace ChapmanUniversity1._0.Controllers
         public IActionResult Index()
         {
 
-            var semesterList =  _unitOfWork.Semesters.GetAll();
-
+            var semesterList =  _unitOfWork.Semesters.GetSemestersWithCourses();
 
             return View(semesterList);
         }
@@ -38,11 +37,10 @@ namespace ChapmanUniversity1._0.Controllers
         {
             List<string> seasonsList = new List<string>(Enum.GetNames(typeof(Seasons)));
             ViewData["Seasons"] = new SelectList(seasonsList);
-            var course = _unitOfWork.Courses.GetById(id);
 
-            Semester semester = new Semester()
+            Semester semester = new Semester
             {
-                Course = course
+                CourseId = id
             };
             return View(semester);
         }
@@ -55,18 +53,22 @@ namespace ChapmanUniversity1._0.Controllers
             List<string> seasonsList = new List<string>(Enum.GetNames(typeof(Seasons)));
             ViewData["Seasons"] = new SelectList(seasonsList);
 
-            var course = _unitOfWork.Courses.GetById(semester.Course.Id);
+            var course = _unitOfWork.Courses.GetById(semester.CourseId);
             var semesterExists = _unitOfWork.Semesters.SemesterExists(course.Id, semester.CourseSeason);
 
-           
-            Semester newSemester = new Semester()
+            if (!semesterExists)
             {
-                Course = course,
-                CourseSeason = semester.CourseSeason
-            };
-                    _unitOfWork.Semesters.Add(newSemester);
-                    _unitOfWork.Complete();
-                    return RedirectToAction(nameof(Create));
+                Semester newSemester = new Semester()
+                {
+                    CourseId = semester.CourseId,
+                    CourseSeason = semester.CourseSeason
+                };
+                
+                _unitOfWork.Semesters.Add(newSemester);
+                _unitOfWork.Complete();
+            }
+            
+            return RedirectToAction(nameof(Create));
         }
 
             public IActionResult Edit(int id)

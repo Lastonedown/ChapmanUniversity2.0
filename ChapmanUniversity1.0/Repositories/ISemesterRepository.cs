@@ -12,6 +12,8 @@ namespace ChapmanUniversity1._0.Repositories
 
         bool SemesterExists(int courseNumber, string courseSeason);
 
+        IEnumerable<Semester> GetSemestersWithCourses();
+        int FindSemesterId(int courseId, string courseSeason);
     }
 }
 

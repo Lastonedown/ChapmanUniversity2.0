@@ -8,6 +8,7 @@ namespace ChapmanUniversity1._0.UnitOfWork
         ICourseRepository Courses { get; }
         ISemesterRepository Semesters { get; }
         IStudentRepository Students { get;}
+        IStudentEnrollmentsRepository StudentEnrollments { get; }
         int Complete();
     }
 }

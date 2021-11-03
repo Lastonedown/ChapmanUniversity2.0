@@ -95,7 +95,7 @@ namespace ChapmanUniversity1._0.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("CourseId")
+                    b.Property<int>("CourseId")
                         .HasColumnType("int");
 
                     b.Property<string>("CourseSeason")
@@ -166,18 +166,13 @@ namespace ChapmanUniversity1._0.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("CourseId")
+                    b.Property<int>("SemesterId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("SemesterId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("StudentId")
+                    b.Property<int>("StudentId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CourseId");
 
                     b.HasIndex("SemesterId");
 
@@ -189,31 +184,41 @@ namespace ChapmanUniversity1._0.Migrations
             modelBuilder.Entity("ChapmanUniversity1._0.Models.Semester", b =>
                 {
                     b.HasOne("ChapmanUniversity1._0.Models.Course", "Course")
-                        .WithMany()
-                        .HasForeignKey("CourseId");
+                        .WithMany("Semesters")
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Course");
                 });
 
             modelBuilder.Entity("ChapmanUniversity1._0.Models.StudentSemesterEnrollment", b =>
                 {
-                    b.HasOne("ChapmanUniversity1._0.Models.Course", "Course")
-                        .WithMany()
-                        .HasForeignKey("CourseId");
-
                     b.HasOne("ChapmanUniversity1._0.Models.Semester", "Semester")
                         .WithMany()
-                        .HasForeignKey("SemesterId");
+                        .HasForeignKey("SemesterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("ChapmanUniversity1._0.Models.Student", "Student")
-                        .WithMany()
-                        .HasForeignKey("StudentId");
-
-                    b.Navigation("Course");
+                        .WithMany("SemesterEnrollments")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Semester");
 
                     b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("ChapmanUniversity1._0.Models.Course", b =>
+                {
+                    b.Navigation("Semesters");
+                });
+
+            modelBuilder.Entity("ChapmanUniversity1._0.Models.Student", b =>
+                {
+                    b.Navigation("SemesterEnrollments");
                 });
 #pragma warning restore 612, 618
         }

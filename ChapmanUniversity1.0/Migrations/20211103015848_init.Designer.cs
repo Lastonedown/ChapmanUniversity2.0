@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChapmanUniversity1._0.Migrations
 {
     [DbContext(typeof(SchoolContext))]
-    [Migration("20211007030325_init")]
+    [Migration("20211103015848_init")]
     partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -18,7 +18,7 @@ namespace ChapmanUniversity1._0.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("ProductVersion", "5.0.10")
+                .HasAnnotation("ProductVersion", "5.0.11")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("ChapmanUniversity1._0.Models.Course", b =>
@@ -97,7 +97,7 @@ namespace ChapmanUniversity1._0.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("CourseId")
+                    b.Property<int>("CourseId")
                         .HasColumnType("int");
 
                     b.Property<string>("CourseSeason")
@@ -168,9 +168,6 @@ namespace ChapmanUniversity1._0.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("CourseId")
-                        .HasColumnType("int");
-
                     b.Property<int>("SemesterId")
                         .HasColumnType("int");
 
@@ -178,8 +175,6 @@ namespace ChapmanUniversity1._0.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CourseId");
 
                     b.HasIndex("SemesterId");
 
@@ -191,20 +186,16 @@ namespace ChapmanUniversity1._0.Migrations
             modelBuilder.Entity("ChapmanUniversity1._0.Models.Semester", b =>
                 {
                     b.HasOne("ChapmanUniversity1._0.Models.Course", "Course")
-                        .WithMany()
-                        .HasForeignKey("CourseId");
+                        .WithMany("Semesters")
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Course");
                 });
 
             modelBuilder.Entity("ChapmanUniversity1._0.Models.StudentSemesterEnrollment", b =>
                 {
-                    b.HasOne("ChapmanUniversity1._0.Models.Course", "Course")
-                        .WithMany("Enrollments")
-                        .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("ChapmanUniversity1._0.Models.Semester", "Semester")
                         .WithMany()
                         .HasForeignKey("SemesterId")
@@ -212,12 +203,10 @@ namespace ChapmanUniversity1._0.Migrations
                         .IsRequired();
 
                     b.HasOne("ChapmanUniversity1._0.Models.Student", "Student")
-                        .WithMany("Enrollments")
+                        .WithMany("SemesterEnrollments")
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Course");
 
                     b.Navigation("Semester");
 
@@ -226,12 +215,12 @@ namespace ChapmanUniversity1._0.Migrations
 
             modelBuilder.Entity("ChapmanUniversity1._0.Models.Course", b =>
                 {
-                    b.Navigation("Enrollments");
+                    b.Navigation("Semesters");
                 });
 
             modelBuilder.Entity("ChapmanUniversity1._0.Models.Student", b =>
                 {
-                    b.Navigation("Enrollments");
+                    b.Navigation("SemesterEnrollments");
                 });
 #pragma warning restore 612, 618
         }

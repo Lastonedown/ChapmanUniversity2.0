@@ -10,8 +10,8 @@
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="Course.CourseName" class="control-label"></label>
-                <select asp-for="Course.Id" class="form-control" asp-items="ViewBag.CourseId"></select>
+                <label asp-for="Semester.Course.CourseName" class="control-label"></label>
+                <select asp-for="Semester.Course.Id" class="form-control" asp-items="ViewBag.CourseId"></select>
             </div>
             <div class="form-group">
                 <label asp-for="Semester.CourseSeason" class="control-label"></label>

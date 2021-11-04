@@ -29,5 +29,7 @@ namespace ChapmanUniversity1._0.Models
         [Display(Name = "Course Description")]
         [Required]
         public string CourseDescription { get; set; }
+
+        public List<Semester> Semesters { get; set; }
     }
 }

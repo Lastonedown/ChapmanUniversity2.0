@@ -22,7 +22,6 @@ namespace ChapmanUniversity1._0.Controllers
 
         public ActionResult Login()
         {
-
             return View();
         }
 

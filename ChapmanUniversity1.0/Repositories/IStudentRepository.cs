@@ -8,6 +8,6 @@ namespace ChapmanUniversity1._0.Repositories
 {
     public interface IStudentRepository : IRepository<Student>
     {
-        bool StudentEmailExists(string emailAddress);
+
     }
 }

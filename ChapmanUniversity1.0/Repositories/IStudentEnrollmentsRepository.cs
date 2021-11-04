@@ -8,8 +8,6 @@ namespace ChapmanUniversity1._0.Repositories
 {
     public interface IStudentEnrollmentsRepository : IRepository<StudentSemesterEnrollment>
     {
-        bool EnrollmentExists(int semesterId, int studentId);
 
-        List<StudentSemesterEnrollment> GetEnrollmentListWithStudentAndSemesters();
     }
 }

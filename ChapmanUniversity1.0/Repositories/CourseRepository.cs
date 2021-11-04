@@ -15,23 +15,5 @@ namespace ChapmanUniversity1._0.Repositories
         public CourseRepository(SchoolContext context) : base(context)
         {
         }
-
-        public SchoolContext SchoolContext => Context as SchoolContext;
-
-        public bool CourseExists(Course course)
-        {
-            foreach (var row in SchoolContext.Courses)
-            {
-                if (row.CourseNumber == course.CourseNumber)
-                {
-                    return true;
-                }
-
-                return false;
-            }
-
-            return false;
-        }
-
     }
 }

@@ -11,37 +11,67 @@ namespace ChapmanUniversity1._0.Repositories
 {
     public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
     {
-        protected readonly DbContext Context;
+        internal SchoolContext Context;
+        internal DbSet<TEntity> DbSet;
 
-        public Repository(DbContext context)
+        public Repository(SchoolContext context)
         {
             Context = context;
+            DbSet = context.Set<TEntity>();
         }
 
-        public TEntity GetById(int id)
+        public virtual IEnumerable<TEntity> Get(
+            Expression<Func<TEntity, bool>> filter = null,
+        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
+        string includeProperties = "")
         {
-            return Context.Set<TEntity>().Find(id);
+            IQueryable<TEntity> query = DbSet;
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            foreach (var includeProperty in includeProperties.Split
+                (new char[] {','}, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProperty);
+            }
+
+            if (orderBy != null)
+            {
+                return orderBy(query).ToList();
+            }
+
+            return query.ToList();
         }
 
 
-        public IEnumerable<TEntity> GetAll()
+        public virtual void Add(TEntity entity)
         {
-            return Context.Set<TEntity>().ToList();
+            DbSet.Add(entity);
         }
 
-        public IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> predicate)
+        public virtual TEntity GetById(object id)
         {
-            return Context.Set<TEntity>().Where(predicate);
+            return DbSet.Find(id);
         }
 
-        public void Add(TEntity entity)
+
+        public virtual void Remove(object id)
         {
-            Context.Set<TEntity>().Add(entity);
+            TEntity entityToDelete = DbSet.Find(id);
+            Remove(entityToDelete);
         }
 
-        public void Remove(TEntity entity)
+        public virtual void Remove(TEntity entityToDelete)
         {
-            Context.Set<TEntity>().Remove(entity);
+            if (Context.Entry(entityToDelete).State == EntityState.Detached)
+            {
+                DbSet.Attach(entityToDelete);
+            }
+            DbSet.Remove(entityToDelete);
         }
+
     }
 }

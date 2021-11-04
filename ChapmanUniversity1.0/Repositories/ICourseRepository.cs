@@ -9,7 +9,7 @@ namespace ChapmanUniversity1._0.Repositories
 {
     public interface ICourseRepository : IRepository<Course>
     {
-        bool CourseExists(Course course);
+
     }
 }
 

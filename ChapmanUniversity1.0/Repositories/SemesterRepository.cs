@@ -13,42 +13,5 @@ namespace ChapmanUniversity1._0.Repositories
         public SemesterRepository(SchoolContext context) : base(context)
         {
         }
-
-        public SchoolContext SchoolContext => Context as SchoolContext;
-
-        public bool SemesterExists(int courseId, string courseSeason)
-        {
-            foreach (var semester in SchoolContext.Semesters)
-            {
-                if (semester.CourseId == courseId && semester.CourseSeason == courseSeason)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        public IEnumerable<Semester> GetSemestersWithCourses()
-        {
-            var semestersWithCourses = SchoolContext.Semesters.Include(course => course.Course).ToList();
-
-            return semestersWithCourses;
-        }
-
-        public int FindSemesterId(int courseId, string courseSeason)
-        {
-            foreach (var semester in SchoolContext.Semesters)
-            {
-                if (semester.CourseId == courseId && semester.CourseSeason == courseSeason)
-                {
-                    return semester.Id;
-                }
-            }
-
-            return 0;
-        }
     }
-
-    
-   
 }

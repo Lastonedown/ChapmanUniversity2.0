@@ -4,14 +4,16 @@ using ChapmanUniversity1._0.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ChapmanUniversity1._0.Migrations
 {
     [DbContext(typeof(SchoolContext))]
-    partial class SchoolContextModelSnapshot : ModelSnapshot
+    [Migration("20211106022519_init2")]
+    partial class init2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -102,9 +104,14 @@ namespace ChapmanUniversity1._0.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("StudentSemesterEnrollmentId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CourseId");
+
+                    b.HasIndex("StudentSemesterEnrollmentId");
 
                     b.ToTable("Semesters");
                 });
@@ -149,12 +156,17 @@ namespace ChapmanUniversity1._0.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("StudentSemesterEnrollmentId")
+                        .HasColumnType("int");
+
                     b.Property<string>("StudentUserName")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("StudentSemesterEnrollmentId");
 
                     b.ToTable("Students");
                 });
@@ -166,9 +178,6 @@ namespace ChapmanUniversity1._0.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("CourseId")
-                        .HasColumnType("int");
-
                     b.Property<int>("SemesterId")
                         .HasColumnType("int");
 
@@ -176,8 +185,6 @@ namespace ChapmanUniversity1._0.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CourseId");
 
                     b.HasIndex("SemesterId");
 
@@ -194,17 +201,24 @@ namespace ChapmanUniversity1._0.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("ChapmanUniversity1._0.Models.StudentSemesterEnrollment", null)
+                        .WithMany("Semesters")
+                        .HasForeignKey("StudentSemesterEnrollmentId");
+
                     b.Navigation("Course");
+                });
+
+            modelBuilder.Entity("ChapmanUniversity1._0.Models.Student", b =>
+                {
+                    b.HasOne("ChapmanUniversity1._0.Models.StudentSemesterEnrollment", null)
+                        .WithMany("Students")
+                        .HasForeignKey("StudentSemesterEnrollmentId");
                 });
 
             modelBuilder.Entity("ChapmanUniversity1._0.Models.StudentSemesterEnrollment", b =>
                 {
-                    b.HasOne("ChapmanUniversity1._0.Models.Course", "Course")
-                        .WithMany()
-                        .HasForeignKey("CourseId");
-
                     b.HasOne("ChapmanUniversity1._0.Models.Semester", "Semester")
-                        .WithMany("StudentSemesterEnrollments")
+                        .WithMany()
                         .HasForeignKey("SemesterId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -214,8 +228,6 @@ namespace ChapmanUniversity1._0.Migrations
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Course");
 
                     b.Navigation("Semester");
 
@@ -227,9 +239,11 @@ namespace ChapmanUniversity1._0.Migrations
                     b.Navigation("Semesters");
                 });
 
-            modelBuilder.Entity("ChapmanUniversity1._0.Models.Semester", b =>
+            modelBuilder.Entity("ChapmanUniversity1._0.Models.StudentSemesterEnrollment", b =>
                 {
-                    b.Navigation("StudentSemesterEnrollments");
+                    b.Navigation("Semesters");
+
+                    b.Navigation("Students");
                 });
 #pragma warning restore 612, 618
         }

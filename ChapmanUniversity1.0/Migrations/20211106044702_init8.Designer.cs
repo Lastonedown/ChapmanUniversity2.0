@@ -4,14 +4,16 @@ using ChapmanUniversity1._0.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ChapmanUniversity1._0.Migrations
 {
     [DbContext(typeof(SchoolContext))]
-    partial class SchoolContextModelSnapshot : ModelSnapshot
+    [Migration("20211106044702_init8")]
+    partial class init8
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -169,6 +171,9 @@ namespace ChapmanUniversity1._0.Migrations
                     b.Property<int?>("CourseId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("FK_Course")
+                        .HasColumnType("int");
+
                     b.Property<int>("SemesterId")
                         .HasColumnType("int");
 
@@ -179,7 +184,7 @@ namespace ChapmanUniversity1._0.Migrations
 
                     b.HasIndex("CourseId");
 
-                    b.HasIndex("SemesterId");
+                    b.HasIndex("FK_Course");
 
                     b.HasIndex("StudentId");
 
@@ -205,9 +210,7 @@ namespace ChapmanUniversity1._0.Migrations
 
                     b.HasOne("ChapmanUniversity1._0.Models.Semester", "Semester")
                         .WithMany("StudentSemesterEnrollments")
-                        .HasForeignKey("SemesterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("FK_Course");
 
                     b.HasOne("ChapmanUniversity1._0.Models.Student", "Student")
                         .WithMany()

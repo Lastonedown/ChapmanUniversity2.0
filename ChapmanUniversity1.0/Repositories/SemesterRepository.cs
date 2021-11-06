@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ChapmanUniversity1._0.Repositories
 {
-    public class SemesterRepository : Repository<Semester>, ISemesterRepository
+    public class SemesterRepository : Repository<Semester>
     {
         public SemesterRepository(SchoolContext context) : base(context)
         {

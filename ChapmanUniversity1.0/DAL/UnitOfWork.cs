@@ -12,9 +12,10 @@ namespace ChapmanUniversity1._0.DAL
         private Repository<Course> _courseRepository;
         private Repository<Semester> _semesterRepository;
         private Repository<Student> _studentRepository;
+        private Repository<Faculty> _facultyRepository;
         private Repository<StudentSemesterEnrollment> _studentSemesterRepository;
 
-        public Repository<Course> CourseRepository
+        public Repository<Course> Courses
         {
             get
             {
@@ -23,7 +24,7 @@ namespace ChapmanUniversity1._0.DAL
             }
         }
 
-        public Repository<Semester> SemesterRepository
+        public Repository<Semester> Semesters
         {
             get
             {
@@ -32,7 +33,7 @@ namespace ChapmanUniversity1._0.DAL
             }
         }
 
-        public Repository<Student> StudentRepository
+        public Repository<Student> Students
         {
             get
             {
@@ -40,8 +41,15 @@ namespace ChapmanUniversity1._0.DAL
                 return _studentRepository;
             }
         }
-
-        public Repository<StudentSemesterEnrollment> StudentSemesterEnrollmentRepository
+        public Repository<Faculty> FacultyMembers
+        {
+            get
+            {
+                _facultyRepository ??= new Repository<Faculty>(_context);
+                return _facultyRepository;
+            }
+        }
+        public Repository<StudentSemesterEnrollment> StudentSemesterEnrollments
         {
             get
             {

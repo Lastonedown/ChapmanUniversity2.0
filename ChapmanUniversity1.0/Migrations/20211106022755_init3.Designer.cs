@@ -4,14 +4,16 @@ using ChapmanUniversity1._0.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ChapmanUniversity1._0.Migrations
 {
     [DbContext(typeof(SchoolContext))]
-    partial class SchoolContextModelSnapshot : ModelSnapshot
+    [Migration("20211106022755_init3")]
+    partial class init3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -166,9 +168,6 @@ namespace ChapmanUniversity1._0.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("CourseId")
-                        .HasColumnType("int");
-
                     b.Property<int>("SemesterId")
                         .HasColumnType("int");
 
@@ -176,8 +175,6 @@ namespace ChapmanUniversity1._0.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CourseId");
 
                     b.HasIndex("SemesterId");
 
@@ -199,12 +196,8 @@ namespace ChapmanUniversity1._0.Migrations
 
             modelBuilder.Entity("ChapmanUniversity1._0.Models.StudentSemesterEnrollment", b =>
                 {
-                    b.HasOne("ChapmanUniversity1._0.Models.Course", "Course")
-                        .WithMany()
-                        .HasForeignKey("CourseId");
-
                     b.HasOne("ChapmanUniversity1._0.Models.Semester", "Semester")
-                        .WithMany("StudentSemesterEnrollments")
+                        .WithMany()
                         .HasForeignKey("SemesterId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -215,8 +208,6 @@ namespace ChapmanUniversity1._0.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Course");
-
                     b.Navigation("Semester");
 
                     b.Navigation("Student");
@@ -225,11 +216,6 @@ namespace ChapmanUniversity1._0.Migrations
             modelBuilder.Entity("ChapmanUniversity1._0.Models.Course", b =>
                 {
                     b.Navigation("Semesters");
-                });
-
-            modelBuilder.Entity("ChapmanUniversity1._0.Models.Semester", b =>
-                {
-                    b.Navigation("StudentSemesterEnrollments");
                 });
 #pragma warning restore 612, 618
         }

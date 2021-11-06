@@ -21,13 +21,16 @@
                 <input type="submit" value="Register" class="btn btn-primary" />
                 @if (TempData.ContainsKey("CourseEnrollmentSuccessAlert"))
                 {
-        <div class="alert alert-success" role="alert">Enrollment was successful</div>}
+                    <div class="alert alert-success" role="alert">Enrollment was successful</div>}
                 @if (TempData.ContainsKey("CourseAlreadyRegisteredAlert"))
                 {
-        <div class="alert alert-danger" role="alert">Course is already enrolled</div>}
+                    <div class="alert alert-danger" role="alert">Course is already enrolled</div>}
                 @if (TempData.ContainsKey("SemesterNotAvailable"))
                 {
                     <div class="alert alert-danger" role="alert">Semester not available</div>}
+                @if (TempData.ContainsKey("NoCoursesAvailable"))
+                {
+                    <div class="alert alert-danger" role="alert">No available courses</div>}
             </div>
         </form>
     </div>

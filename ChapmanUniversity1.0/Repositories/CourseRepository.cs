@@ -9,9 +9,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ChapmanUniversity1._0.Repositories
 {
-    public class CourseRepository :Repository<Course>,ICourseRepository
+    public class CourseRepository : Repository<Course>
     {
-
         public CourseRepository(SchoolContext context) : base(context)
         {
         }

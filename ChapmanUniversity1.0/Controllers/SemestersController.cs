@@ -1,29 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using ChapmanUniversity1._0.DAL;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using ChapmanUniversity1._0.Data;
 using ChapmanUniversity1._0.Models;
 namespace ChapmanUniversity1._0.Controllers
 {
     public class SemestersController : Controller
     {
-        private readonly UnitOfWork _unitOfWork = new();
+        private readonly UnitOfWork _unitOfWork;
+
+        public SemestersController(UnitOfWork unitOfWork)
+        {
+            _unitOfWork = unitOfWork;
+        }
         public IActionResult Index()
         {
 
-            var semesterList = _unitOfWork.SemesterRepository.Get(includeProperties: "Course");
+            var semesterList = _unitOfWork.Semesters.Get(includeProperties: "Course").ToList();
 
             return View(semesterList);
         }
         public IActionResult Details(int id)
         {
 
-            var semester =  _unitOfWork.SemesterRepository.GetById(id);
+            var semester =  _unitOfWork.Semesters.GetById(id);
             if (semester == null)
             {
                 return NotFound();
@@ -49,14 +51,15 @@ namespace ChapmanUniversity1._0.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Create(Semester semester)
         {
+            TempData.Remove("SemesterCreatedSuccessfullyAlert");
+            TempData.Remove("SemesterExistsAlert");
             List<string> seasonsList = new List<string>(Enum.GetNames(typeof(Seasons)));
             ViewData["Seasons"] = new SelectList(seasonsList);
 
-            var semesters = _unitOfWork.SemesterRepository.Get();
 
-            var enumerable = semesters as Semester[] ?? semesters.ToArray();
+            var semesterExists = Validators.SemesterValidator.Validate(semester.CourseId, semester.CourseSeason);
 
-            if (!enumerable.Any())
+            if (!semesterExists)
             {
                 Semester newSemester = new Semester()
                 {
@@ -64,33 +67,18 @@ namespace ChapmanUniversity1._0.Controllers
                     CourseSeason = semester.CourseSeason
                 };
 
-                _unitOfWork.SemesterRepository.Add(newSemester);
+                _unitOfWork.Semesters.Add(newSemester);
                 _unitOfWork.Complete();
-
+                TempData.Add("SemesterCreatedSuccessfullyAlert",null);
                 return RedirectToAction(nameof(Create));
             }
-            foreach (var row in enumerable)
-            {
-                if (row != semester)
-                {
-                    Semester newSemester = new Semester()
-                    {
-                        CourseId = semester.CourseId,
-                        CourseSeason = semester.CourseSeason
-                    };
-
-                    _unitOfWork.SemesterRepository.Add(newSemester);
-                    _unitOfWork.Complete();
-
-                    return RedirectToAction(nameof(Create));
-                }
-            } 
+            TempData.Add("SemesterExistsAlert", null);
             return RedirectToAction(nameof(Create));
         }
 
             public IActionResult Edit(int id)
         {
-            var semester = _unitOfWork.SemesterRepository.GetById(id);
+            var semester = _unitOfWork.Semesters.GetById(id);
             if (semester == null)
             {
                 return NotFound();
@@ -109,7 +97,7 @@ namespace ChapmanUniversity1._0.Controllers
         public IActionResult Delete(int id)
         {
 
-            var semester = _unitOfWork.SemesterRepository.GetById(id);
+            var semester = _unitOfWork.Semesters.GetById(id);
             if (semester == null)
             {
                 return NotFound();
@@ -122,8 +110,8 @@ namespace ChapmanUniversity1._0.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
         {
-            var semester = _unitOfWork.SemesterRepository.GetById(id);
-            _unitOfWork.SemesterRepository.Remove(semester);
+            var semester = _unitOfWork.Semesters.GetById(id);
+            _unitOfWork.Semesters.Remove(semester);
             _unitOfWork.Complete();
             return RedirectToAction(nameof(Index));
         }

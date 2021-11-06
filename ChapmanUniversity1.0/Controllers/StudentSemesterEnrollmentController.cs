@@ -1,37 +1,50 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
-using System.Security.AccessControl;
-using System.Threading.Tasks;
 using ChapmanUniversity1._0.DAL;
-using ChapmanUniversity1._0.Data;
 using ChapmanUniversity1._0.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 
 namespace ChapmanUniversity1._0.Controllers
 {
     public class StudentSemesterEnrollmentController : Controller
     {
-        private readonly UnitOfWork _unitOfWork = new();
+        private readonly UnitOfWork _unitOfWork;
+
+        public StudentSemesterEnrollmentController(UnitOfWork unitOfWork)
+        {
+            _unitOfWork = unitOfWork;
+        }
+
         public IActionResult Index()
         {
             TempData.Keep("studentId");
-            var studentId = (int)TempData["studentId"];
+            var studentId = (int) TempData["studentId"];
 
-            var studentEnrollments = _unitOfWork.StudentSemesterEnrollmentRepository.Get(includeProperties: "Semester");
+            var studentSemesterEnrollments = _unitOfWork.StudentSemesterEnrollments.Get(includeProperties:"Semester").ToList();
+
+            
+
             List<StudentSemesterEnrollment> semesterEnrollments = new List<StudentSemesterEnrollment>();
-            foreach (var studentEnrollment in studentEnrollments)
+
+            foreach (var studentEnrollment in studentSemesterEnrollments)
             {
                 if (studentEnrollment.StudentId == studentId)
                 {
-                    semesterEnrollments.Add(studentEnrollment);
+                    var course = _unitOfWork.Courses.GetById(studentEnrollment.Semester.CourseId);
+                    StudentSemesterEnrollment semester = new StudentSemesterEnrollment()
+                        {
+                            Semester = studentEnrollment.Semester,
+                            Course = course
+                        };
+
+                        semesterEnrollments.Add(semester);
                 }
             }
+
             return View(semesterEnrollments);
-                
+
         }
 
         public IActionResult Details(int? id)
@@ -42,7 +55,7 @@ namespace ChapmanUniversity1._0.Controllers
 
         public IActionResult Create()
         {
-            ViewData["CourseId"] = new SelectList(_unitOfWork.CourseRepository.Get(), "Id", "CourseName");
+            ViewData["CourseId"] = new SelectList(_unitOfWork.Courses.Get(), "Id", "CourseName");
             List<string> seasonList = new List<string>(Enum.GetNames(typeof(Seasons)));
             ViewData["SemesterSeasons"] = new SelectList(seasonList);
 
@@ -55,48 +68,48 @@ namespace ChapmanUniversity1._0.Controllers
         {
             TempData.Remove("SemesterNotAvailable");
             TempData.Remove("CourseEnrollmentSuccessAlert");
+            TempData.Remove("NoCoursesAvailable");
             TempData.Remove("CourseAlreadyRegisteredAlert");
             var studentId = (int) TempData["studentId"];
-
-            var semesters = _unitOfWork.SemesterRepository.Get();
-            var studentEnrollments = _unitOfWork.StudentSemesterEnrollmentRepository.Get();
-           
-            var semesterList = semesters as Semester[] ?? semesters.ToArray();
-            var studentSemesterEnrollments = studentEnrollments as StudentSemesterEnrollment[] ?? studentEnrollments.ToArray();
-
-            if (semesterList.Any() && studentSemesterEnrollments.Any())
+            if (studentSemesterEnrollment.Semester.Course == null)
             {
-                foreach (var row in semesterList)
-                {
-                    if (row.CourseSeason != studentSemesterEnrollment.Semester.CourseSeason)
-                    {
-                        TempData.Add("SemesterNotAvailable", null);
-                        return RedirectToAction(nameof(Create));
-                    }
+                TempData.Add("NoCoursesAvailable", null);
+                return RedirectToAction(nameof(Create));
 
-                    if (studentSemesterEnrollments.Any())
-                        foreach (var enrollment in studentSemesterEnrollments)
-                        {
-                            if (enrollment.Semester.CourseSeason != studentSemesterEnrollment.Semester.CourseSeason)
-                            {
-                                StudentSemesterEnrollment newEnrollment = new StudentSemesterEnrollment()
-                                {
-                                    SemesterId = row.Id,
-                                    StudentId = studentId,
-                                };
-                                _unitOfWork.StudentSemesterEnrollmentRepository.Add(newEnrollment);
-                                _unitOfWork.Complete();
-                                TempData.Add("CourseEnrollmentSuccessAlert", null);
-                                TempData.Keep("studentId");
-                                return RedirectToAction(nameof(Create));
-                            }
-                        }
-
-                    TempData.Keep("studentId");
-                    TempData.Add("CourseAlreadyRegisteredAlert", null);
-                    return RedirectToAction(nameof(Create));
-                }
             }
+            var semesterExists = Validators.SemesterValidator.Validate(
+                studentSemesterEnrollment.Semester.Course.Id,
+                studentSemesterEnrollment.Semester.CourseSeason);
+            
+
+            var semesterId = BusinessLogic.SemesterBusinessLogic.FindSemesterId(
+                studentSemesterEnrollment.Semester.Course.Id, studentSemesterEnrollment.Semester.CourseSeason);
+
+            var studentEnrollmentExists = Validators.StudentEnrollmentValidator.Validate(studentId, semesterId);
+            
+            if (!semesterExists)
+            {
+                TempData.Add("SemesterNotAvailable", null);
+                return RedirectToAction(nameof(Create));
+            }
+
+            if (!studentEnrollmentExists)
+            {
+                StudentSemesterEnrollment newEnrollment = new StudentSemesterEnrollment()
+                {
+                    SemesterId = semesterId,
+                    StudentId = studentId
+                };
+
+                _unitOfWork.StudentSemesterEnrollments.Add(newEnrollment);
+                _unitOfWork.Complete();
+                TempData.Add("CourseEnrollmentSuccessAlert", null);
+                TempData.Keep("studentId");
+                return RedirectToAction(nameof(Create));
+            }
+
+            TempData.Keep("studentId");
+            TempData.Add("CourseAlreadyRegisteredAlert", null);
             return RedirectToAction(nameof(Create));
         }
 

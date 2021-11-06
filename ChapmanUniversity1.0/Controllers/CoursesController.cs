@@ -9,20 +9,26 @@ namespace ChapmanUniversity1._0.Controllers
 
     public class CoursesController : Controller
     {
-        private readonly UnitOfWork _unitOfWork = new();
+        private readonly UnitOfWork _unitOfWork;
+
+        public CoursesController(UnitOfWork unitOfWork)
+        {
+            _unitOfWork = unitOfWork;
+        }
+
 
         public IActionResult Index()
         {
             TempData.Remove("CourseCreatedSuccessfullyAlert");
             TempData.Remove("CourseAlreadyCreatedAlert");
-            var courses =   _unitOfWork.CourseRepository.Get();
+            var courses =   _unitOfWork.Courses.Get().ToList();
            
            return View(courses);
         }
 
         public IActionResult Details(int id)
         {
-            var course = _unitOfWork.CourseRepository.GetById(id);
+            var course = _unitOfWork.Courses.GetById(id);
             
             return View(course);
         }
@@ -38,26 +44,16 @@ namespace ChapmanUniversity1._0.Controllers
         {
             TempData.Remove("CourseCreatedSuccessfullyAlert");
             TempData.Remove("CourseAlreadyCreatedAlert");
-            var courses = _unitOfWork.CourseRepository.Get();
 
-            var courseList= courses as Course[] ?? courses.ToArray();
-            if (!courseList.Any())
-            {
-                _unitOfWork.CourseRepository.Add(course);
-                _unitOfWork.Complete();
-                TempData.Add("CourseCreatedSuccessfullyAlert", null);
+            var courseExists = Validators.CourseValidator.Validate(course.CourseNumber);
+
+            if (!courseExists)
+            { 
+                _unitOfWork.Courses.Add(course); 
+                _unitOfWork.Complete(); 
+                TempData.Add("CourseCreatedSuccessfullyAlert", null); 
                 return RedirectToAction(nameof(Create));
-            }
-
-            foreach (var row in courseList)
-            {
-                if (row.CourseNumber != course.CourseNumber)
-                { 
-                    _unitOfWork.CourseRepository.Add(course); 
-                    _unitOfWork.Complete(); 
-                    TempData.Add("CourseCreatedSuccessfullyAlert", null);
-                    return RedirectToAction(nameof(Create));
-                }
+                
             }
             TempData.Add("CourseAlreadyCreatedAlert", null);
             return RedirectToAction(nameof(Create));
@@ -65,7 +61,7 @@ namespace ChapmanUniversity1._0.Controllers
 
         public IActionResult Edit(int id)
         {
-            var course =  _unitOfWork.CourseRepository.GetById(id);
+            var course =  _unitOfWork.Courses.GetById(id);
             return View(course);
         }
 
@@ -82,7 +78,7 @@ namespace ChapmanUniversity1._0.Controllers
 
         public IActionResult Delete(int id)
         {
-            var course = _unitOfWork.CourseRepository.GetById(id);
+            var course = _unitOfWork.Courses.GetById(id);
             return View(course);
         }
 
@@ -91,7 +87,7 @@ namespace ChapmanUniversity1._0.Controllers
         public IActionResult DeleteConfirmed(Course course)
         {
 
-            _unitOfWork.CourseRepository.Remove(course);
+            _unitOfWork.Courses.Remove(course);
             _unitOfWork.Complete();
             return RedirectToAction(nameof(Index));
         }

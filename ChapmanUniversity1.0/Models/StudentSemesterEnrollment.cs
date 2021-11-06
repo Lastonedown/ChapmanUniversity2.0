@@ -24,8 +24,9 @@ namespace ChapmanUniversity1._0.Models
         public int SemesterId { get; set; }
 
         public Semester Semester { get; set; }
-
         public Student Student { get; set; }
+        public Course Course { get; set; }
+
 
     }
 }

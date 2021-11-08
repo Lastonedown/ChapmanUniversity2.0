@@ -22,34 +22,49 @@ namespace ChapmanUniversity1._0.Controllers
             TempData.Keep("studentId");
             var studentId = (int) TempData["studentId"];
 
-            var studentSemesterEnrollments = _unitOfWork.StudentSemesterEnrollments.Get(includeProperties:"Semester").ToList();
+            var studentEnrollmentList = _unitOfWork.StudentSemesterEnrollments.Get();
+            var semesterList = _unitOfWork.Semesters.Get(includeProperties: "Course").ToList();
 
-            
+            List<StudentSemesterEnrollment> enrolledCourses = new();
 
-            List<StudentSemesterEnrollment> semesterEnrollments = new List<StudentSemesterEnrollment>();
-
-            foreach (var studentEnrollment in studentSemesterEnrollments)
+            foreach (var enrollment in studentEnrollmentList)
             {
-                if (studentEnrollment.StudentId == studentId)
+                if (enrollment.StudentId == studentId)
                 {
-                    var course = _unitOfWork.Courses.GetById(studentEnrollment.Semester.CourseId);
-                    StudentSemesterEnrollment semester = new StudentSemesterEnrollment()
+                    foreach (var semester in semesterList)
+                    {
+                        if (enrollment.SemesterId == semester.Id)
                         {
-                            Semester = studentEnrollment.Semester,
-                            Course = course
-                        };
+                            enrolledCourses.Add(new StudentSemesterEnrollment {Semester = semester,Id = enrollment.Id});
+                        }
+                    }
 
-                        semesterEnrollments.Add(semester);
+                    return View(enrolledCourses);
                 }
             }
 
-            return View(semesterEnrollments);
-
+            var updatedStudent = _unitOfWork.Students.GetById(studentId);
+            updatedStudent.IsStudentActive = "N";
+            _unitOfWork.Students.Update(updatedStudent);
+            _unitOfWork.Complete();
+            return View(enrolledCourses);
         }
 
-        public IActionResult Details(int? id)
+        public IActionResult Details(int id)
         {
 
+            var semesterList = _unitOfWork.Semesters.Get(includeProperties: "Course").ToList();
+            foreach (var semester in semesterList)
+            {
+                if (semester.Id == id)
+                {
+                    StudentSemesterEnrollment newSemester = new StudentSemesterEnrollment()
+                    {
+                        Semester = semester
+                    }; 
+                    return View(newSemester);
+                }
+            }
             return View();
         }
 
@@ -93,6 +108,7 @@ namespace ChapmanUniversity1._0.Controllers
                 return RedirectToAction(nameof(Create));
             }
 
+
             if (!studentEnrollmentExists)
             {
                 StudentSemesterEnrollment newEnrollment = new StudentSemesterEnrollment()
@@ -100,8 +116,10 @@ namespace ChapmanUniversity1._0.Controllers
                     SemesterId = semesterId,
                     StudentId = studentId
                 };
-
                 _unitOfWork.StudentSemesterEnrollments.Add(newEnrollment);
+                var updatedStudent = _unitOfWork.Students.GetById(studentId);
+                updatedStudent.IsStudentActive = "Y";
+                _unitOfWork.Students.Update(updatedStudent);
                 _unitOfWork.Complete();
                 TempData.Add("CourseEnrollmentSuccessAlert", null);
                 TempData.Keep("studentId");
@@ -114,14 +132,30 @@ namespace ChapmanUniversity1._0.Controllers
         }
 
         public ActionResult Delete(int id)
+        {
+            var enrolledCourseToBeDeleted = _unitOfWork.StudentSemesterEnrollments.GetById(id);
+            var semesterList = _unitOfWork.Semesters.Get(includeProperties: "Course").ToList();
+            foreach (var semester in semesterList)
             {
-                return View();
+                if (enrolledCourseToBeDeleted.SemesterId == semester.Id)
+                {
+                    StudentSemesterEnrollment enrollmentToBeDeleted = new StudentSemesterEnrollment()
+                    {
+                        Semester = semester,
+                    };
+                    return View(enrollmentToBeDeleted);
+                }
+            }
+            return View();
             }
 
             [HttpPost, ActionName("Delete")]
             [ValidateAntiForgeryToken]
             public IActionResult  DeleteConfirmed(int id)
             {
+                
+                _unitOfWork.StudentSemesterEnrollments.Remove(id);
+                _unitOfWork.Complete();
                 TempData.Add("CourseRemovedSuccessfullyAlert", null);
                 return RedirectToAction(nameof(Index));
             }

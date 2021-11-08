@@ -166,9 +166,6 @@ namespace ChapmanUniversity1._0.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("CourseId")
-                        .HasColumnType("int");
-
                     b.Property<int>("SemesterId")
                         .HasColumnType("int");
 
@@ -176,8 +173,6 @@ namespace ChapmanUniversity1._0.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CourseId");
 
                     b.HasIndex("SemesterId");
 
@@ -199,10 +194,6 @@ namespace ChapmanUniversity1._0.Migrations
 
             modelBuilder.Entity("ChapmanUniversity1._0.Models.StudentSemesterEnrollment", b =>
                 {
-                    b.HasOne("ChapmanUniversity1._0.Models.Course", "Course")
-                        .WithMany()
-                        .HasForeignKey("CourseId");
-
                     b.HasOne("ChapmanUniversity1._0.Models.Semester", "Semester")
                         .WithMany("StudentSemesterEnrollments")
                         .HasForeignKey("SemesterId")
@@ -214,8 +205,6 @@ namespace ChapmanUniversity1._0.Migrations
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Course");
 
                     b.Navigation("Semester");
 

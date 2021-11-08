@@ -58,13 +58,13 @@ namespace ChapmanUniversity1._0.Repositories
         }
 
 
-        public virtual void Remove(object id)
+        public void Remove(object id)
         {
             TEntity entityToDelete = DbSet.Find(id);
-            Remove(entityToDelete);
+            Delete(entityToDelete);
         }
 
-        public virtual void Remove(TEntity entityToDelete)
+        public virtual void Delete(TEntity entityToDelete)
         {
             if (Context.Entry(entityToDelete).State == EntityState.Detached)
             {
@@ -73,5 +73,10 @@ namespace ChapmanUniversity1._0.Repositories
             DbSet.Remove(entityToDelete);
         }
 
+        public virtual void Update(TEntity entityToUpdate)
+        {
+            DbSet.Attach(entityToUpdate);
+            Context.Entry(entityToUpdate).State = EntityState.Modified;
+        }
     }
 }

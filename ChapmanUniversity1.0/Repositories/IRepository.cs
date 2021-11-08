@@ -15,8 +15,7 @@ namespace ChapmanUniversity1._0.Repositories
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
             string includeProperties = "");
         void Add(TEntity entity);
-        void Remove(TEntity entity);
-
-
+        void Update(TEntity entity);
+        void Remove(Object id);
     }
 }

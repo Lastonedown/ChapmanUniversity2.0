@@ -84,10 +84,10 @@ namespace ChapmanUniversity1._0.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(Course course)
+        public IActionResult DeleteConfirmed(int id)
         {
 
-            _unitOfWork.Courses.Remove(course);
+            _unitOfWork.Courses.Remove(id);
             _unitOfWork.Complete();
             return RedirectToAction(nameof(Index));
         }

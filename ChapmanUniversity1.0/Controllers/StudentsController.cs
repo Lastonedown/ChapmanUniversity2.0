@@ -33,7 +33,6 @@ namespace ChapmanUniversity1._0.Controllers
         // GET: Students/Create
         public IActionResult Create()
         {
-            TempData.Clear();
             return View();
         }
 

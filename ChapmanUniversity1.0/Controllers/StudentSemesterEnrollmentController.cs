@@ -10,9 +10,9 @@ namespace ChapmanUniversity1._0.Controllers
 {
     public class StudentSemesterEnrollmentController : Controller
     {
-        private readonly UnitOfWork _unitOfWork;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public StudentSemesterEnrollmentController(UnitOfWork unitOfWork)
+        public StudentSemesterEnrollmentController(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }
@@ -22,8 +22,8 @@ namespace ChapmanUniversity1._0.Controllers
             TempData.Keep("studentId");
             var studentId = (int) TempData["studentId"];
 
-            var studentEnrollmentList = _unitOfWork.StudentSemesterEnrollments.Get();
-            var semesterList = _unitOfWork.Semesters.Get(includeProperties: "Course").ToList();
+            var studentEnrollmentList = _unitOfWork.StudentEnrollmentsRepository.Get().ToList();
+            var semesterList = _unitOfWork.SemesterRepository.Get(includeProperties: "Course").ToList();
 
             List<StudentSemesterEnrollment> enrolledCourses = new();
 
@@ -43,9 +43,9 @@ namespace ChapmanUniversity1._0.Controllers
                 }
             }
 
-            var updatedStudent = _unitOfWork.Students.GetById(studentId);
+            var updatedStudent = _unitOfWork.StudentRepository.GetById(studentId);
             updatedStudent.IsStudentActive = "N";
-            _unitOfWork.Students.Update(updatedStudent);
+            _unitOfWork.StudentRepository.Update(updatedStudent);
             _unitOfWork.Complete();
             return View(enrolledCourses);
         }
@@ -53,7 +53,7 @@ namespace ChapmanUniversity1._0.Controllers
         public IActionResult Details(int id)
         {
 
-            var semesterList = _unitOfWork.Semesters.Get(includeProperties: "Course").ToList();
+            var semesterList = _unitOfWork.SemesterRepository.Get(includeProperties: "Course").ToList();
             foreach (var semester in semesterList)
             {
                 if (semester.Id == id)
@@ -70,7 +70,7 @@ namespace ChapmanUniversity1._0.Controllers
 
         public IActionResult Create()
         {
-            ViewData["CourseId"] = new SelectList(_unitOfWork.Courses.Get(), "Id", "CourseName");
+            ViewData["CourseId"] = new SelectList(_unitOfWork.CourseRepository.Get(), "Id", "CourseName");
             List<string> seasonList = new List<string>(Enum.GetNames(typeof(Seasons)));
             ViewData["SemesterSeasons"] = new SelectList(seasonList);
 
@@ -92,15 +92,14 @@ namespace ChapmanUniversity1._0.Controllers
                 return RedirectToAction(nameof(Create));
 
             }
-            var semesterExists = Validators.SemesterValidator.Validate(
+            var semesterExists = _unitOfWork.SemesterRepository.ValidateSemester(
                 studentSemesterEnrollment.Semester.Course.Id,
                 studentSemesterEnrollment.Semester.CourseSeason);
+
+            var semesterId = _unitOfWork.SemesterRepository.GetSemesterId(studentSemesterEnrollment.Semester.CourseId,
+                studentSemesterEnrollment.Semester.CourseSeason);
             
-
-            var semesterId = BusinessLogic.SemesterBusinessLogic.FindSemesterId(
-                studentSemesterEnrollment.Semester.Course.Id, studentSemesterEnrollment.Semester.CourseSeason);
-
-            var studentEnrollmentExists = Validators.StudentEnrollmentValidator.Validate(studentId, semesterId);
+            var studentEnrollmentExists = _unitOfWork.StudentEnrollmentsRepository.ValidateStudentEnrollment(studentId,semesterId);
             
             if (!semesterExists)
             {
@@ -113,13 +112,13 @@ namespace ChapmanUniversity1._0.Controllers
             {
                 StudentSemesterEnrollment newEnrollment = new StudentSemesterEnrollment()
                 {
-                    SemesterId = semesterId,
-                    StudentId = studentId
+                    StudentId = studentId,
+                    SemesterId = semesterId
                 };
-                _unitOfWork.StudentSemesterEnrollments.Add(newEnrollment);
-                var updatedStudent = _unitOfWork.Students.GetById(studentId);
+                _unitOfWork.StudentEnrollmentsRepository.Add(newEnrollment);
+                var updatedStudent = _unitOfWork.StudentRepository.GetById(studentId);
                 updatedStudent.IsStudentActive = "Y";
-                _unitOfWork.Students.Update(updatedStudent);
+                _unitOfWork.StudentRepository.Update(updatedStudent);
                 _unitOfWork.Complete();
                 TempData.Add("CourseEnrollmentSuccessAlert", null);
                 TempData.Keep("studentId");
@@ -133,15 +132,15 @@ namespace ChapmanUniversity1._0.Controllers
 
         public ActionResult Delete(int id)
         {
-            var enrolledCourseToBeDeleted = _unitOfWork.StudentSemesterEnrollments.GetById(id);
-            var semesterList = _unitOfWork.Semesters.Get(includeProperties: "Course").ToList();
+            var enrolledCourseToBeDeleted = _unitOfWork.StudentEnrollmentsRepository.GetById(id);
+            var semesterList = _unitOfWork.SemesterRepository.Get(includeProperties: "Course").ToList();
             foreach (var semester in semesterList)
             {
                 if (enrolledCourseToBeDeleted.SemesterId == semester.Id)
                 {
                     StudentSemesterEnrollment enrollmentToBeDeleted = new StudentSemesterEnrollment()
                     {
-                        Semester = semester,
+                        Semester = semester
                     };
                     return View(enrollmentToBeDeleted);
                 }
@@ -154,7 +153,7 @@ namespace ChapmanUniversity1._0.Controllers
             public IActionResult  DeleteConfirmed(int id)
             {
                 
-                _unitOfWork.StudentSemesterEnrollments.Remove(id);
+                _unitOfWork.StudentEnrollmentsRepository.Remove(id);
                 _unitOfWork.Complete();
                 TempData.Add("CourseRemovedSuccessfullyAlert", null);
                 return RedirectToAction(nameof(Index));

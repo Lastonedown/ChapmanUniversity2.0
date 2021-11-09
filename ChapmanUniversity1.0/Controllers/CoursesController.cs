@@ -9,9 +9,9 @@ namespace ChapmanUniversity1._0.Controllers
 
     public class CoursesController : Controller
     {
-        private readonly UnitOfWork _unitOfWork;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public CoursesController(UnitOfWork unitOfWork)
+        public CoursesController(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }
@@ -21,14 +21,14 @@ namespace ChapmanUniversity1._0.Controllers
         {
             TempData.Remove("CourseCreatedSuccessfullyAlert");
             TempData.Remove("CourseAlreadyCreatedAlert");
-            var courses =   _unitOfWork.Courses.Get().ToList();
+            var courses =   _unitOfWork.CourseRepository.Get().ToList();
            
            return View(courses);
         }
 
         public IActionResult Details(int id)
         {
-            var course = _unitOfWork.Courses.GetById(id);
+            var course = _unitOfWork.CourseRepository.GetById(id);
             
             return View(course);
         }
@@ -45,11 +45,11 @@ namespace ChapmanUniversity1._0.Controllers
             TempData.Remove("CourseCreatedSuccessfullyAlert");
             TempData.Remove("CourseAlreadyCreatedAlert");
 
-            var courseExists = Validators.CourseValidator.Validate(course.CourseNumber);
+            var courseExists = _unitOfWork.CourseRepository.ValidateCourse(course.CourseNumber);
 
             if (!courseExists)
             { 
-                _unitOfWork.Courses.Add(course); 
+                _unitOfWork.CourseRepository.Add(course); 
                 _unitOfWork.Complete(); 
                 TempData.Add("CourseCreatedSuccessfullyAlert", null); 
                 return RedirectToAction(nameof(Create));
@@ -61,7 +61,7 @@ namespace ChapmanUniversity1._0.Controllers
 
         public IActionResult Edit(int id)
         {
-            var course =  _unitOfWork.Courses.GetById(id);
+            var course =  _unitOfWork.CourseRepository.GetById(id);
             return View(course);
         }
 
@@ -78,7 +78,7 @@ namespace ChapmanUniversity1._0.Controllers
 
         public IActionResult Delete(int id)
         {
-            var course = _unitOfWork.Courses.GetById(id);
+            var course = _unitOfWork.CourseRepository.GetById(id);
             return View(course);
         }
 
@@ -87,7 +87,7 @@ namespace ChapmanUniversity1._0.Controllers
         public IActionResult DeleteConfirmed(int id)
         {
 
-            _unitOfWork.Courses.Remove(id);
+            _unitOfWork.CourseRepository.Remove(id);
             _unitOfWork.Complete();
             return RedirectToAction(nameof(Index));
         }

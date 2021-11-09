@@ -1,16 +1,18 @@
 ﻿using System.Linq;
-using ChapmanUniversity1._0.DAL;
+using ChapmanUniversity1._0.Data;
 using ChapmanUniversity1._0.Models;
 
-namespace ChapmanUniversity1._0.Validators
+namespace ChapmanUniversity1._0.Repositories.FacultyRepositories
 {
-    public static class FacultyValidator
+    public class FacultyRepository : Repository<Faculty>, IFacultyRepository
     {
-        private static readonly UnitOfWork UnitOfWork = new();
-
-        public static Faculty ValidateFacultyLogin(string facultyId, string password)
+        public FacultyRepository(SchoolContext context) : base(context)
         {
-            var facultyMembers = UnitOfWork.FacultyMembers.Get().ToList();
+        }
+
+        public Faculty ValidateFacultyLogin(string facultyId, string password)
+        {
+            var facultyMembers = Context.FacultyMembers.ToList();
             bool isPasswordValid = false;
 
             foreach (var t in facultyMembers)
@@ -30,5 +32,6 @@ namespace ChapmanUniversity1._0.Validators
 
             return null;
         }
+
     }
 }

@@ -34,7 +34,8 @@ namespace ChapmanUniversity1._0
 
             services.AddMvc();
             services.AddDbContext<SchoolContext>();
-            services.AddScoped<UnitOfWork>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
         }
 
 

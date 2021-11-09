@@ -1,62 +1,37 @@
-﻿using System;
-using ChapmanUniversity1._0.Data;
-using ChapmanUniversity1._0.Models;
-using ChapmanUniversity1._0.Repositories;
+﻿using ChapmanUniversity1._0.Data;
+using ChapmanUniversity1._0.Repositories.CourseRepositories;
+using ChapmanUniversity1._0.Repositories.FacultyRepositories;
+using ChapmanUniversity1._0.Repositories.SemesterRepositories;
+using ChapmanUniversity1._0.Repositories.StudentEnrollmentRepositories;
+using ChapmanUniversity1._0.Repositories.StudentRepositories;
 
 namespace ChapmanUniversity1._0.DAL
 {
-    public class UnitOfWork : IDisposable
+    public class UnitOfWork : IUnitOfWork
     {
+        private readonly SchoolContext _context;
 
-        private readonly SchoolContext _context = new();
-        private Repository<Course> _courseRepository;
-        private Repository<Semester> _semesterRepository;
-        private Repository<Student> _studentRepository;
-        private Repository<Faculty> _facultyRepository;
-        private Repository<StudentSemesterEnrollment> _studentSemesterRepository;
-
-        public Repository<Course> Courses
+        public UnitOfWork(SchoolContext context)
         {
-            get
-            {
-                _courseRepository ??= new Repository<Course>(_context);
-                return _courseRepository;
-            }
+            this._context = context;
         }
 
-        public Repository<Semester> Semesters
-        {
-            get
-            {
-                _semesterRepository ??= new Repository<Semester>(_context);
-                return _semesterRepository;
-            }
-        }
 
-        public Repository<Student> Students
-        {
-            get
-            {
-                _studentRepository ??= new Repository<Student>(_context);
-                return _studentRepository;
-            }
-        }
-        public Repository<Faculty> FacultyMembers
-        {
-            get
-            {
-                _facultyRepository ??= new Repository<Faculty>(_context);
-                return _facultyRepository;
-            }
-        }
-        public Repository<StudentSemesterEnrollment> StudentSemesterEnrollments
-        {
-            get
-            {
-                _studentSemesterRepository ??= new Repository<StudentSemesterEnrollment>(_context);
-                return _studentSemesterRepository;
-            }
-        }
+        private ISemesterRepository semesterRepository;
+        public ISemesterRepository SemesterRepository => semesterRepository ?? new SemesterRepository(_context);
+        
+        private ICourseRepository courseRepository;
+        public ICourseRepository CourseRepository => courseRepository ?? new CourseRepository(_context);
+
+        private IFacultyRepository facultyRepository;
+        public IFacultyRepository FacultyRepository => facultyRepository ?? new FacultyRepository(_context);
+
+        private IStudentEnrollmentsRepository studentEnrollmentsRepository;
+        public IStudentEnrollmentsRepository StudentEnrollmentsRepository => studentEnrollmentsRepository ?? new StudentEnrollmentsRepository(_context);
+
+        private IStudentRepository studentRepository;
+        public IStudentRepository StudentRepository => studentRepository ?? new StudentRepository(_context);
+
         public int Complete()
         {
             return _context.SaveChanges();

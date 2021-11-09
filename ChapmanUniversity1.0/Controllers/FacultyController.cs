@@ -1,15 +1,14 @@
 ﻿using ChapmanUniversity1._0.DAL;
 using Microsoft.AspNetCore.Mvc;
 using ChapmanUniversity1._0.Models;
-using ChapmanUniversity1._0.Validators;
 
 namespace ChapmanUniversity1._0.Controllers
 {
     public class FacultyController : Controller
     {
-        private readonly UnitOfWork _unitOfWork;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public FacultyController(UnitOfWork unitOfWork)
+        public FacultyController(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }
@@ -24,7 +23,7 @@ namespace ChapmanUniversity1._0.Controllers
         public IActionResult Login(Faculty facultyLogin)
         {
             TempData.Remove("InvalidFacultyLogin");
-            var facultyMember = FacultyValidator.ValidateFacultyLogin(facultyLogin.FacultyUserName.Trim(), facultyLogin.Password);
+            var facultyMember = _unitOfWork.FacultyRepository.ValidateFacultyLogin(facultyLogin.FacultyUserName.Trim(), facultyLogin.Password);
 
             if (facultyMember == null)
             {
@@ -42,7 +41,7 @@ namespace ChapmanUniversity1._0.Controllers
             var id = (int) TempData["FacultyId"];
             TempData.Keep("FacultyId");
 
-            var facultyMember = _unitOfWork.FacultyMembers.GetById(id);
+            var facultyMember = _unitOfWork.FacultyRepository.GetById(id);
 
             return View(facultyMember);
         }

@@ -8,7 +8,12 @@ namespace ChapmanUniversity1._0.Controllers
 {
     public class StudentsController : Controller
     {
-        private readonly UnitOfWork _unitOfWork = new();
+        private readonly IUnitOfWork _unitOfWork;
+
+        public StudentsController(IUnitOfWork unitOfWork)
+        {
+            _unitOfWork = unitOfWork;
+        }
 
         public IActionResult Details()
         {
@@ -20,7 +25,7 @@ namespace ChapmanUniversity1._0.Controllers
             var id = (int) TempData["StudentId"];
             TempData.Keep("StudentId");
 
-            var student = _unitOfWork.Students.GetById(id);
+            var student = _unitOfWork.StudentRepository.GetById(id);
 
             if (student == null)
             {
@@ -45,7 +50,7 @@ namespace ChapmanUniversity1._0.Controllers
             Random random = new Random();
             Student student = new Student();
 
-            var studentExists = Validators.StudentValidator.Validate(student1.EmailAddress);
+            var studentExists = _unitOfWork.StudentRepository.ValidateStudent(student1.EmailAddress);
             if (ModelState.IsValid && !studentExists)
             {
 
@@ -64,7 +69,7 @@ namespace ChapmanUniversity1._0.Controllers
                 student.Password = encryptedPassword;
 
 
-                _unitOfWork.Students.Add(student);
+                _unitOfWork.StudentRepository.Add(student);
                 _unitOfWork.Complete();
                 TempData.Add("RegistrationSuccessAlert", studentId);
 
@@ -87,8 +92,7 @@ namespace ChapmanUniversity1._0.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Login(StudentLogin studentLogin)
         {
-            var student =
-                Validators.StudentValidator.ValidateStudentLogin(studentLogin.UserName.Trim(), studentLogin.Password);
+            var student = _unitOfWork.StudentRepository.ValidateStudentLogin(studentLogin.UserName.Trim(), studentLogin.Password);
 
             TempData.Clear();
             if (student == null)

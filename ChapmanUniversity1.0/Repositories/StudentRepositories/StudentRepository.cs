@@ -1,25 +1,28 @@
 ﻿using System.Linq;
 using ChapmanUniversity1._0.DAL;
+using ChapmanUniversity1._0.Data;
 using ChapmanUniversity1._0.Models;
 using PasswordEncryptDecrypt;
 
-namespace ChapmanUniversity1._0.Validators
+namespace ChapmanUniversity1._0.Repositories.StudentRepositories
 {
-    public static class StudentValidator
+    public class StudentRepository : Repository<Student>, IStudentRepository
     {
-        private static readonly UnitOfWork UnitOfWork = new();
-
-        public static bool Validate(string email)
+        public StudentRepository(SchoolContext context) : base(context)
         {
-            var studentList = UnitOfWork.Students.Get().ToList();
-            
+        }
+
+        public bool ValidateStudent(string email)
+        {
+            var studentList = Context.Students.ToList();
+
             if (!studentList.Any())
             {
                 return false;
             }
             foreach (var student in studentList)
             {
-                if(student.EmailAddress == email)
+                if (student.EmailAddress == email)
                 {
                     return true;
                 }
@@ -27,12 +30,12 @@ namespace ChapmanUniversity1._0.Validators
             return false;
         }
 
-        public static Student ValidateStudentLogin(string studentId, string password)
+        public Student ValidateStudentLogin(string studentId, string password)
         {
-            var students = UnitOfWork.Students.Get().ToList();
+            var studentList = Context.Students.ToList();
             bool isPasswordValid = false;
 
-            foreach (var t in students)
+            foreach (var t in studentList)
             {
                 string trimmedStudentId = t.StudentUserName.Trim();
 

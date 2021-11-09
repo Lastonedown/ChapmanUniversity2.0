@@ -9,23 +9,23 @@ namespace ChapmanUniversity1._0.Controllers
 {
     public class SemestersController : Controller
     {
-        private readonly UnitOfWork _unitOfWork;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public SemestersController(UnitOfWork unitOfWork)
+        public SemestersController(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }
         public IActionResult Index()
         {
             TempData.Clear();
-            var semesterList = _unitOfWork.Semesters.Get(includeProperties: "Course").ToList();
+            var semesterList = _unitOfWork.SemesterRepository.Get(includeProperties: "Course").ToList();
 
             return View(semesterList);
         }
         public IActionResult Details(int id)
         {
 
-            var semester =  _unitOfWork.Semesters.GetById(id);
+            var semester =  _unitOfWork.SemesterRepository.GetById(id);
             if (semester == null)
             {
                 return NotFound();
@@ -58,7 +58,7 @@ namespace ChapmanUniversity1._0.Controllers
             ViewData["Seasons"] = new SelectList(seasonsList);
 
 
-            var semesterExists = Validators.SemesterValidator.Validate(semester.CourseId, semester.CourseSeason);
+            var semesterExists = _unitOfWork.SemesterRepository.ValidateSemester(semester.CourseId, semester.CourseSeason);
 
             Semester newSemester = new Semester()
             {
@@ -68,7 +68,7 @@ namespace ChapmanUniversity1._0.Controllers
 
             if (!semesterExists)
             {
-                _unitOfWork.Semesters.Add(newSemester);
+                _unitOfWork.SemesterRepository.Add(newSemester);
                 _unitOfWork.Complete();
                 TempData.Add("SemesterCreatedSuccessfullyAlert",null);
                 return RedirectToAction(nameof(Create));
@@ -79,7 +79,7 @@ namespace ChapmanUniversity1._0.Controllers
 
             public IActionResult Edit(int id)
         {
-            var semester = _unitOfWork.Semesters.GetById(id);
+            var semester = _unitOfWork.SemesterRepository.GetById(id);
             if (semester == null)
             {
                 return NotFound();
@@ -98,7 +98,7 @@ namespace ChapmanUniversity1._0.Controllers
         public IActionResult Delete(int id)
         {
 
-            var semester = _unitOfWork.Semesters.GetById(id);
+            var semester = _unitOfWork.SemesterRepository.GetById(id);
             if (semester == null)
             {
                 return NotFound();
@@ -111,10 +111,11 @@ namespace ChapmanUniversity1._0.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
         {
-            var semester = _unitOfWork.Semesters.GetById(id);
-            _unitOfWork.Semesters.Remove(semester);
+            var semester = _unitOfWork.SemesterRepository.GetById(id);
+            _unitOfWork.SemesterRepository.Remove(semester);
             _unitOfWork.Complete();
             return RedirectToAction(nameof(Index));
         }
+
     }
 }

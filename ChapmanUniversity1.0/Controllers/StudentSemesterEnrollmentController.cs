@@ -1,76 +1,81 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
-using System.Security.AccessControl;
-using System.Threading.Tasks;
-using ChapmanUniversity1._0.Data;
+using ChapmanUniversity1._0.DAL;
 using ChapmanUniversity1._0.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 
 namespace ChapmanUniversity1._0.Controllers
 {
     public class StudentSemesterEnrollmentController : Controller
     {
+        private readonly UnitOfWork _unitOfWork;
 
-        private readonly IStudentSemesterEnrollmentOperations _enrollmentContext;
-
-        private readonly ICourseOperations _courseContext;
-
-        private readonly IStudentOperations _studentContext;
-
-        private readonly ISemesterOperations _semesterContext;
-
-        public StudentSemesterEnrollmentController(IStudentSemesterEnrollmentOperations enrollmentContext, ICourseOperations courseContext,IStudentOperations studentContext,ISemesterOperations semesterContext)
+        public StudentSemesterEnrollmentController(UnitOfWork unitOfWork)
         {
-            _enrollmentContext = enrollmentContext;
-            _courseContext = courseContext;
-            _studentContext = studentContext;
-            _semesterContext = semesterContext;
+            _unitOfWork = unitOfWork;
         }
 
-        // GET: StudentCourseEnrollments
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
             TempData.Keep("studentId");
-            var studentId = (int)TempData["studentId"];
+            TempData.Remove("SemesterNotAvailable");
+            TempData.Remove("CourseEnrollmentSuccessAlert");
+            TempData.Remove("NoCoursesAvailable");
+            TempData.Remove("CourseAlreadyRegisteredAlert");
+            var studentId = (int) TempData["studentId"];
 
+            var studentEnrollmentList = GetStudentSemesterEnrollments();
+            var semesterList = GetSemesters();
 
-            var studentEnrollments = await _enrollmentContext.StudentSemesterEnrollmentList();
+            List<StudentSemesterEnrollment> enrolledCourses = new();
 
-            List<StudentSemesterEnrollment> enrollmentList = new List<StudentSemesterEnrollment>();
-
-            foreach (var t in studentEnrollments)
+            foreach (var enrollment in studentEnrollmentList)
             {
-                if (studentId == t.Student.Id)
+                if (enrollment.StudentId == studentId)
                 {
-                    StudentSemesterEnrollment newStudentSemesterEnrollment = new StudentSemesterEnrollment()
+                    foreach (var semester in semesterList)
                     {
-                        Course = t.Course,
-                        Student = t.Student,
-                        Semester = t.Semester,
-                        Id = t.Id
-                    };
-                    enrollmentList.Add(newStudentSemesterEnrollment);
-                }
+                        if (enrollment.SemesterId == semester.Id)
+                        {
+                            enrolledCourses.Add(new StudentSemesterEnrollment {Semester = semester,Id = enrollment.Id});
+                        }
+                    }
 
-                return View(enrollmentList);
+                    return View(enrolledCourses);
+                }
             }
 
-            return View(enrollmentList);
+            var updatedStudent = _unitOfWork.Students.GetById(studentId);
+            updatedStudent.IsStudentActive = "N";
+            _unitOfWork.Students.Update(updatedStudent);
+            _unitOfWork.Complete();
+            return View(enrolledCourses);
         }
 
-        public async Task<IActionResult> Details(int? id)
+        public IActionResult Details(int id)
         {
-            
+
+            var semesterList = _unitOfWork.Semesters.Get(includeProperties: "Course").ToList();
+            foreach (var semester in semesterList)
+            {
+                if (semester.Id == id)
+                {
+                    StudentSemesterEnrollment newSemester = new StudentSemesterEnrollment()
+                    {
+                        Semester = semester
+                    }; 
+                    return View(newSemester);
+                }
+            }
             return View();
         }
 
-        public async Task<IActionResult> Create()
+        public IActionResult Create()
         {
-            ViewData["CourseId"] = new SelectList(await _courseContext.CourseList(), "Id", "CourseName");
+            ViewData["CourseId"] = new SelectList(_unitOfWork.Courses.Get(), "Id", "CourseName");
             List<string> seasonList = new List<string>(Enum.GetNames(typeof(Seasons)));
             ViewData["SemesterSeasons"] = new SelectList(seasonList);
 
@@ -79,45 +84,100 @@ namespace ChapmanUniversity1._0.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(StudentSemesterEnrollment studentSemesterEnrollment)
+        public IActionResult Create(StudentSemesterEnrollment studentSemesterEnrollment)
         {
             TempData.Remove("SemesterNotAvailable");
-            var studentId = (int)TempData["studentId"];
-            var course = await _courseContext.FindCourseById(studentSemesterEnrollment.Course.Id);
-            var student = await _studentContext.FindStudent(studentId);
-            var semester = await _semesterContext.FindSemester(course.Id, studentSemesterEnrollment.Semester.CourseSeason);
-
-            if (semester == null)
+            TempData.Remove("CourseEnrollmentSuccessAlert");
+            TempData.Remove("NoCoursesAvailable");
+            TempData.Remove("CourseAlreadyRegisteredAlert");
+            var studentId = (int) TempData["studentId"];
+            if (studentSemesterEnrollment.Semester.Course == null)
             {
-                TempData.Add("SemesterNotAvailable",null);
+                TempData.Add("NoCoursesAvailable", null);
+                return RedirectToAction(nameof(Create));
+
+            }
+
+            var studentSemesterEnrollments = GetStudentSemesterEnrollments();
+            var semesters = GetSemesters();
+
+            var semesterExists = Validators.SemesterValidator.Validate(semesters,
+                studentSemesterEnrollment.Semester.Course.Id,
+                studentSemesterEnrollment.Semester.CourseSeason);
+            
+
+            var semesterId = Validators.SemesterValidator.FindSemesterId(semesters,
+                studentSemesterEnrollment.Semester.Course.Id, studentSemesterEnrollment.Semester.CourseSeason);
+
+            var studentEnrollmentExists = Validators.StudentEnrollmentValidator.Validate(studentSemesterEnrollments,studentId, semesterId);
+            
+            if (!semesterExists)
+            {
+                TempData.Add("SemesterNotAvailable", null);
                 return RedirectToAction(nameof(Create));
             }
-            StudentSemesterEnrollment newEnrollment = new StudentSemesterEnrollment()
-            {
-                Course = course,
-                Semester = semester,
-                Student = student
-            };
 
-            await _enrollmentContext.CreateStudentSemesterEnrollment(newEnrollment);
+
+            if (!studentEnrollmentExists)
+            {
+                StudentSemesterEnrollment newEnrollment = new StudentSemesterEnrollment()
+                {
+                    SemesterId = semesterId,
+                    StudentId = studentId
+                };
+                _unitOfWork.StudentSemesterEnrollments.Add(newEnrollment);
+                var updatedStudent = _unitOfWork.Students.GetById(studentId);
+                updatedStudent.IsStudentActive = "Y";
+                _unitOfWork.Students.Update(updatedStudent);
+                _unitOfWork.Complete();
+                TempData.Add("CourseEnrollmentSuccessAlert", null);
+                TempData.Keep("studentId");
+                return RedirectToAction(nameof(Create));
+            }
+
             TempData.Keep("studentId");
+            TempData.Add("CourseAlreadyRegisteredAlert", null);
             return RedirectToAction(nameof(Create));
         }
 
-        
         public ActionResult Delete(int id)
         {
+            var enrolledCourseToBeDeleted = _unitOfWork.StudentSemesterEnrollments.GetById(id);
+            var semesterList = GetSemesters();
+
+            foreach (var semester in semesterList)
+            {
+                if (enrolledCourseToBeDeleted.SemesterId == semester.Id)
+                {
+                    StudentSemesterEnrollment enrollmentToBeDeleted = new StudentSemesterEnrollment()
+                    {
+                        Semester = semester,
+                    };
+                    return View(enrollmentToBeDeleted);
+                }
+            }
             return View();
-        }
+            }
 
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            await _enrollmentContext.DeleteStudentSemesterEnrollmentById(id);
-            TempData.Add("CourseRemovedSuccessfullyAlert", null);
-            return RedirectToAction(nameof(Index));
-        }
+            [HttpPost, ActionName("Delete")]
+            [ValidateAntiForgeryToken]
+            public IActionResult  DeleteConfirmed(int id)
+            {
+                
+                _unitOfWork.StudentSemesterEnrollments.Remove(id);
+                _unitOfWork.Complete();
+                TempData.Add("CourseRemovedSuccessfullyAlert", null);
+                return RedirectToAction(nameof(Index));
+            }
 
+            public List<StudentSemesterEnrollment> GetStudentSemesterEnrollments()
+            {
+                return _unitOfWork.StudentSemesterEnrollments.Get().ToList();
+            }
+
+            public List<Semester> GetSemesters()
+            {
+                return _unitOfWork.Semesters.Get(includeProperties: "Course").ToList();
+        }
     }
 }

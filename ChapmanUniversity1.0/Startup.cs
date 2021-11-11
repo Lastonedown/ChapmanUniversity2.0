@@ -8,8 +8,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ChapmanUniversity1._0.DAL;
 using ChapmanUniversity1._0.Data;
 using ChapmanUniversity1._0.Models;
+using ChapmanUniversity1._0.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
@@ -29,14 +31,12 @@ namespace ChapmanUniversity1._0
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<SchoolContext>(options => options.UseSqlServer(Configuration.GetConnectionString("Default")));
-            services.AddDatabaseDeveloperPageExceptionFilter();
-            services.AddScoped<ICourseOperations, CourseOperations>();
-            services.AddScoped<ISemesterOperations, SemesterOperations>();
-            services.AddScoped<IStudentOperations, StudentOperations>();
-            services.AddScoped<IStudentSemesterEnrollmentOperations,StudentStudentSemesterEnrollmentOperations>();
-            services.AddControllersWithViews();
+
+            services.AddMvc();
+            services.AddDbContext<SchoolContext>();
+            services.AddScoped<UnitOfWork>();
         }
+
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

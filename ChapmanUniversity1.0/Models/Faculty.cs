@@ -42,6 +42,7 @@ namespace ChapmanUniversity1._0.Models
         public string PhoneNumber { get; set; }
 
         [Required]
+        [DataType(DataType.Password)]
         public string Password { get; set; }
     }
 }

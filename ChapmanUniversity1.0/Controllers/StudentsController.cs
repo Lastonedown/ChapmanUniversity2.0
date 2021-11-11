@@ -1,45 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
-using System.Threading.Tasks;
+using ChapmanUniversity1._0.DAL;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using ChapmanUniversity1._0.Data;
 using PasswordEncryptDecrypt;
 using ChapmanUniversity1._0.Models;
-using Newtonsoft.Json;
 
 namespace ChapmanUniversity1._0.Controllers
 {
     public class StudentsController : Controller
     {
-        private readonly SchoolContext _context;
+        private readonly UnitOfWork _unitOfWork = new();
 
-        public StudentsController(SchoolContext context)
-        {
-            _context = context;
-        }
-
-        // GET: Students/Details/5
-        
-        public async Task<IActionResult> Details()
+        public IActionResult Details()
         {
             if (TempData["StudentId"] == null)
             {
                 return NotFound();
             }
 
-            var id = (int)TempData["StudentId"]; 
+            var id = (int) TempData["StudentId"];
             TempData.Keep("StudentId");
 
-            var student = await _context.Students
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var student = _unitOfWork.Students.GetById(id);
+
             if (student == null)
             {
                 return NotFound();
             }
-           
+
             return View(student);
         }
 
@@ -52,21 +42,24 @@ namespace ChapmanUniversity1._0.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(StudentRegistration student1)
-        { 
+        public IActionResult Create(StudentRegistration student1)
+        {
             TempData.Clear();
             Random random = new Random();
             Student student = new Student();
 
-            if (ModelState.IsValid && !StudentEmailExists(student1.EmailAddress))
+            var students = GetStudents();
+
+            var studentExists = Validators.StudentValidator.Validate(students,student1.EmailAddress);
+            if (ModelState.IsValid && !studentExists)
             {
-               
+
                 string studentId = student1.FirstName.Substring(0, 2) + student1.LastName.Substring(0, 4) +
                                    random.Next(00000, 99999);
 
                 string encryptedPassword = EncryptPassword.Encrypt(student1.Password);
 
-                student.StudentUserName= studentId.Trim();
+                student.StudentUserName = studentId.Trim();
                 student.FirstName = student1.FirstName;
                 student.LastName = student1.LastName;
                 student.PhoneNumber = student1.PhoneNumber;
@@ -76,28 +69,21 @@ namespace ChapmanUniversity1._0.Controllers
                 student.Password = encryptedPassword;
 
 
-                _context.Add(student);
-                await _context.SaveChangesAsync();
-                TempData.Add("RegistrationSuccessAlert",studentId);
-                
+                _unitOfWork.Students.Add(student);
+                _unitOfWork.Complete();
+                TempData.Add("RegistrationSuccessAlert", studentId);
+
                 return RedirectToAction(nameof(Create));
             }
-            if (ModelState.IsValid && StudentEmailExists(student1.EmailAddress))
-            {
-                TempData.Add("EmailExistsAlert", student1.EmailAddress);
-            }
 
+            TempData.Add("EmailExistsAlert", null);
             return View();
-        }
-
-        private bool StudentEmailExists(string emailAddress)
-        {
-            return _context.Students.Any(e => e.EmailAddress == emailAddress);
         }
 
 
         public ActionResult Login()
         {
+            TempData.Remove("FacultyId");
             TempData.Remove("StudentId");
             return View();
         }
@@ -106,42 +92,24 @@ namespace ChapmanUniversity1._0.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Login(StudentLogin studentLogin)
         {
-            var student = ValidateStudentLogin(studentLogin.UserName.Trim(), studentLogin.Password);
+            var students = GetStudents();
+
+            var student = Validators.StudentValidator.ValidateStudentLogin(students,studentLogin.UserName.Trim(), studentLogin.Password);
 
             TempData.Clear();
             if (student == null)
             {
-                TempData.Add("InvalidStudentAlert",null);
+                TempData.Add("InvalidStudentAlert", null);
                 return View();
             }
-            TempData.Add("StudentId",student.Id);
+
+            TempData.Add("StudentId", student.Id);
             return RedirectToAction("Details");
         }
 
-        public Student ValidateStudentLogin(string studentId, string password)
+        public List<Student> GetStudents()
         {
-            var students = _context.Students.ToList();
-            bool isPasswordValid = false;
-
-            foreach (var t in students)
-            {
-                string trimmedStudentId = t.StudentUserName.Trim();
-
-                if (trimmedStudentId.Equals(studentId))
-                {
-
-                    string savedPasswordHash = t.Password;
-
-                    isPasswordValid = DecryptPassword.Decrypt(savedPasswordHash, password);
-                }
-
-                if (isPasswordValid)
-                {
-                    return t;
-                }
-            }
-
-            return null;
+            return _unitOfWork.Students.Get().ToList();
         }
     }
 }

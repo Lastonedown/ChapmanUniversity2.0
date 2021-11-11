@@ -1,46 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using ChapmanUniversity1._0.DAL;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using ChapmanUniversity1._0.Data;
 using ChapmanUniversity1._0.Models;
-
 namespace ChapmanUniversity1._0.Controllers
 {
     public class SemestersController : Controller
     {
-        private readonly ISemesterOperations _semestersContext;
-        private readonly ICourseOperations _courseContext;
+        private readonly UnitOfWork _unitOfWork;
 
-        public SemestersController(ISemesterOperations semesterContext,ICourseOperations courseContext )
+        public SemestersController(UnitOfWork unitOfWork)
         {
-            _semestersContext = semesterContext;
-            _courseContext = courseContext;
+            _unitOfWork = unitOfWork;
         }
-
-
-        // GET: Semesters
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-
-            var semesterList = await _semestersContext.SemestersList();
-
+            TempData.Clear();
+            var semesterList = GetSemesters();
 
             return View(semesterList);
         }
-
-        // GET: Semesters/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public IActionResult Details(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
 
-            var semester = await _semestersContext.FindSemesterById(id);
+            var semester =  _unitOfWork.Semesters.GetById(id);
             if (semester == null)
             {
                 return NotFound();
@@ -49,57 +34,52 @@ namespace ChapmanUniversity1._0.Controllers
             return View(semester);
         }
 
-        // GET: Semesters/Create
-        public async Task<IActionResult> Create(int? id)
+        public IActionResult Create(int id)
         {
+
             List<string> seasonsList = new List<string>(Enum.GetNames(typeof(Seasons)));
             ViewData["Seasons"] = new SelectList(seasonsList);
- 
-            var foundCourse = await _courseContext.FindCourseById(id);
 
-            Semester semester = new Semester()
+            Semester semester = new Semester
             {
-                Course = foundCourse
+                CourseId = id
             };
-
             return View(semester);
         }
 
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Semester semester)
+        public IActionResult Create(Semester semester)
         {
+            TempData.Remove("SemesterCreatedSuccessfullyAlert");
+            TempData.Remove("SemesterExistsAlert");
             List<string> seasonsList = new List<string>(Enum.GetNames(typeof(Seasons)));
             ViewData["Seasons"] = new SelectList(seasonsList);
 
-            var foundCourse = await _courseContext.FindCourseById(semester.Course.Id);
+            var semesters = GetSemesters();
+            var semesterExists = Validators.SemesterValidator.Validate(semesters,semester.CourseId, semester.CourseSeason);
 
             Semester newSemester = new Semester()
             {
-                Course = foundCourse,
+                CourseId = semester.Id,
                 CourseSeason = semester.CourseSeason
             };
 
-            var semesterExists = _semestersContext.SemesterExists(newSemester.Course.Id, newSemester.CourseSeason);
             if (!semesterExists)
-            { 
-                await _semestersContext.CreateSemester(newSemester);
+            {
+                _unitOfWork.Semesters.Add(newSemester);
+                _unitOfWork.Complete();
+                TempData.Add("SemesterCreatedSuccessfullyAlert",null);
                 return RedirectToAction(nameof(Create));
             }
-            
+            TempData.Add("SemesterExistsAlert", null);
             return RedirectToAction(nameof(Create));
         }
 
-        // GET: Semesters/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+            public IActionResult Edit(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var semester = await _semestersContext.FindSemesterById(id);
+            var semester = _unitOfWork.Semesters.GetById(id);
             if (semester == null)
             {
                 return NotFound();
@@ -107,30 +87,18 @@ namespace ChapmanUniversity1._0.Controllers
             return View(semester);
         }
 
-        // POST: Semesters/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,CourseSeason")] Semester semester)
+        public IActionResult Edit(Semester semester)
         {
-            if (id != semester.Id)
-            {
-                return NotFound();
-            }
-
-            return View();
+            _unitOfWork.Complete();
+            return RedirectToAction(nameof(Edit));
         }
 
-        // GET: Semesters/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public IActionResult Delete(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
 
-            var semester = await _semestersContext.FindSemesterById(id);
+            var semester = _unitOfWork.Semesters.GetById(id);
             if (semester == null)
             {
                 return NotFound();
@@ -139,13 +107,19 @@ namespace ChapmanUniversity1._0.Controllers
             return View(semester);
         }
 
-        // POST: Semesters/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public IActionResult DeleteConfirmed(int id)
         {
-            await _semestersContext.DeleteSemester(id);
+            var semester = _unitOfWork.Semesters.GetById(id);
+            _unitOfWork.Semesters.Remove(semester);
+            _unitOfWork.Complete();
             return RedirectToAction(nameof(Index));
+        }
+
+        public List<Semester> GetSemesters()
+        {
+            return _unitOfWork.Semesters.Get(includeProperties: "Course").ToList();
         }
     }
 }

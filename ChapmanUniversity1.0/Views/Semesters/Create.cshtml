@@ -14,7 +14,7 @@
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <input type="hidden" asp-for="@Model.Course.Id = id" class="form-control" />
+                <input type="hidden" asp-for="@Model.CourseId = Id" class="form-control" />
             </div>
             <div class="form-group">
                 <label asp-for="CourseSeason" class="control-label"></label>
@@ -22,6 +22,12 @@
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
+                @if (TempData.ContainsKey("SemesterCreatedSuccessfullyAlert"))
+                {
+                    <div class="alert alert-success" role="alert">Semester was created successfully</div>}
+                @if (TempData.ContainsKey("SemesterExistsAlert"))
+                {
+                    <div class="alert alert-danger" role="alert">Semester is already created</div>}
             </div>
         </form>
     </div>

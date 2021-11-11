@@ -1,143 +1,106 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using ChapmanUniversity1._0.DAL;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using ChapmanUniversity1._0.Data;
 using ChapmanUniversity1._0.Models;
+
 
 namespace ChapmanUniversity1._0.Controllers
 {
+
     public class CoursesController : Controller
     {
-        private readonly ICourseOperations _courseContext;
+        private readonly UnitOfWork _unitOfWork;
 
-
-
-        public CoursesController(ICourseOperations courseContext)
+        public CoursesController(UnitOfWork unitOfWork)
         {
-            _courseContext = courseContext;
+            _unitOfWork = unitOfWork;
         }
 
-        public async Task <IActionResult> Index()
-        {
-            var courseList = await _courseContext.CourseList();
-
-            List<Course> indexCourseList = new List<Course>();
-            foreach (var course in courseList)
-            {
-                {
-                    Course newCourse = new Course()
-                    {
-                        CourseNumber = course.CourseNumber,
-                        CourseName = course.CourseName,
-                        CourseDescription = course.CourseDescription,
-                        Credits = course.Credits,
-                        Id = course.Id
-
-                    };
-                  indexCourseList.Add(newCourse);
-                }
-
-            }
-            return View(indexCourseList);
-        }
-
-        public async Task<ActionResult> Details(int? id)
-        {
-            var course = await _courseContext.FindCourseById(id);
-
-            Course courseDetails = new Course()
-           {
-               CourseNumber = course.CourseNumber,
-               CourseDescription = course.CourseDescription,
-               CourseName = course.CourseName,
-               Credits = course.Credits,
-               Id = course.Id
-           };
-           return View(courseDetails);
-        }
-
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Course course)
+        
+        public IActionResult Index()
         {
             TempData.Remove("CourseCreatedSuccessfullyAlert");
             TempData.Remove("CourseAlreadyCreatedAlert");
 
-            var courseExists = _courseContext.CourseExists(course.CourseNumber);
+            var courses = GetCourses();
+            
+            return View(courses);
+        }
 
+        public IActionResult Details(int id)
+        {
+            var course = _unitOfWork.Courses.GetById(id);
+            
+            return View(course);
+        }
 
-            if (!courseExists)
-            {
-                Course newCourse = new Course()
-                {
-                    CourseNumber = course.CourseNumber,
-                    CourseName = course.CourseName,
-                    CourseDescription = course.CourseDescription,
-                    Credits = course.Credits
-                };
-
-
-                await _courseContext.CreateCourse(newCourse);
-
-                TempData.Add("CourseCreatedSuccessfullyAlert", null);
-
-                return View();
-            }
-
-            TempData.Add("CourseAlreadyCreatedAlert", null);
+        public IActionResult Create()
+        {
             return View();
         }
 
-        public ActionResult Edit(int? id)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Create(Course course)
         {
-            return View();
+            TempData.Remove("CourseCreatedSuccessfullyAlert");
+            TempData.Remove("CourseAlreadyCreatedAlert");
+
+            var courses = GetCourses();
+
+            var courseExists = Validators.CourseValidator.Validate(courses,course.CourseNumber);
+
+            if (!courseExists)
+            { 
+                _unitOfWork.Courses.Add(course);
+                _unitOfWork.Complete(); 
+
+                TempData.Add("CourseCreatedSuccessfullyAlert", null);
+                
+                return RedirectToAction(nameof(Create));
+                
+            }
+            TempData.Add("CourseAlreadyCreatedAlert", null);
+            return RedirectToAction(nameof(Create));
+        }
+
+        public IActionResult Edit(int id)
+        {
+            var course =  _unitOfWork.Courses.GetById(id);
+            return View(course);
         }
 
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Course course)
+        public IActionResult Edit(Course course)
         {
-
-            Course editedCourse = new Course()
-            {
-                CourseName = course.CourseName,
-                CourseDescription = course.CourseDescription,
-                CourseNumber = course.CourseNumber,
-                Credits = course.Credits,
-                Id = course.Id
-            };
-
-                await _courseContext.UpdateCourse(editedCourse);
-                return RedirectToAction(nameof(Edit));
+            
+            _unitOfWork.Complete();
+            return RedirectToAction(nameof(Edit));
         }
 
 
-        public async Task<IActionResult> Delete(int? id)
+        public IActionResult Delete(int id)
         {
-            var course = await _courseContext.FindCourseById(id);
-
-
+            var course = _unitOfWork.Courses.GetById(id);
             return View(course);
         }
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public IActionResult DeleteConfirmed(int id)
         {
-            await _courseContext.DeleteCourse(id);
+
+            _unitOfWork.Courses.Remove(id);
+            _unitOfWork.Complete();
             return RedirectToAction(nameof(Index));
         }
 
+        public List<Course> GetCourses()
+        {
+            return _unitOfWork.Courses.Get().ToList();
+        }
     }
 }

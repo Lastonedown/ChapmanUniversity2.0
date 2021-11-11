@@ -10,8 +10,8 @@
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="Course.CourseName" class="control-label"></label>
-                <select asp-for="Course.Id" class="form-control" asp-items="ViewBag.CourseId"></select>
+                <label asp-for="Semester.Course.CourseName" class="control-label"></label>
+                <select asp-for="Semester.Course.Id" class="form-control" asp-items="ViewBag.CourseId"></select>
             </div>
             <div class="form-group">
                 <label asp-for="Semester.CourseSeason" class="control-label"></label>
@@ -21,13 +21,16 @@
                 <input type="submit" value="Register" class="btn btn-primary" />
                 @if (TempData.ContainsKey("CourseEnrollmentSuccessAlert"))
                 {
-        <div class="alert alert-success" role="alert">Enrollment was successful</div>}
+                    <div class="alert alert-success" role="alert">Enrollment was successful</div>}
                 @if (TempData.ContainsKey("CourseAlreadyRegisteredAlert"))
                 {
-        <div class="alert alert-danger" role="alert">Course is already enrolled</div>}
+                    <div class="alert alert-danger" role="alert">Course is already enrolled</div>}
                 @if (TempData.ContainsKey("SemesterNotAvailable"))
                 {
                     <div class="alert alert-danger" role="alert">Semester not available</div>}
+                @if (TempData.ContainsKey("NoCoursesAvailable"))
+                {
+                    <div class="alert alert-danger" role="alert">No available courses</div>}
             </div>
         </form>
     </div>

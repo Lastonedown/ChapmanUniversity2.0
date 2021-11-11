@@ -18,7 +18,7 @@ namespace ChapmanUniversity1._0.Controllers
         public IActionResult Index()
         {
             TempData.Clear();
-            var semesterList = _unitOfWork.Semesters.Get(includeProperties: "Course").ToList();
+            var semesterList = GetSemesters();
 
             return View(semesterList);
         }
@@ -57,8 +57,8 @@ namespace ChapmanUniversity1._0.Controllers
             List<string> seasonsList = new List<string>(Enum.GetNames(typeof(Seasons)));
             ViewData["Seasons"] = new SelectList(seasonsList);
 
-
-            var semesterExists = Validators.SemesterValidator.Validate(semester.CourseId, semester.CourseSeason);
+            var semesters = GetSemesters();
+            var semesterExists = Validators.SemesterValidator.Validate(semesters,semester.CourseId, semester.CourseSeason);
 
             Semester newSemester = new Semester()
             {
@@ -115,6 +115,11 @@ namespace ChapmanUniversity1._0.Controllers
             _unitOfWork.Semesters.Remove(semester);
             _unitOfWork.Complete();
             return RedirectToAction(nameof(Index));
+        }
+
+        public List<Semester> GetSemesters()
+        {
+            return _unitOfWork.Semesters.Get(includeProperties: "Course").ToList();
         }
     }
 }

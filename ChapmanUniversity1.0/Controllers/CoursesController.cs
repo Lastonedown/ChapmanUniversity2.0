@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using ChapmanUniversity1._0.DAL;
 using Microsoft.AspNetCore.Mvc;
 using ChapmanUniversity1._0.Models;
@@ -16,14 +17,15 @@ namespace ChapmanUniversity1._0.Controllers
             _unitOfWork = unitOfWork;
         }
 
-
+        
         public IActionResult Index()
         {
             TempData.Remove("CourseCreatedSuccessfullyAlert");
             TempData.Remove("CourseAlreadyCreatedAlert");
-            var courses =   _unitOfWork.Courses.Get().ToList();
-           
-           return View(courses);
+
+            var courses = GetCourses();
+            
+            return View(courses);
         }
 
         public IActionResult Details(int id)
@@ -45,13 +47,17 @@ namespace ChapmanUniversity1._0.Controllers
             TempData.Remove("CourseCreatedSuccessfullyAlert");
             TempData.Remove("CourseAlreadyCreatedAlert");
 
-            var courseExists = Validators.CourseValidator.Validate(course.CourseNumber);
+            var courses = GetCourses();
+
+            var courseExists = Validators.CourseValidator.Validate(courses,course.CourseNumber);
 
             if (!courseExists)
             { 
-                _unitOfWork.Courses.Add(course); 
+                _unitOfWork.Courses.Add(course);
                 _unitOfWork.Complete(); 
-                TempData.Add("CourseCreatedSuccessfullyAlert", null); 
+
+                TempData.Add("CourseCreatedSuccessfullyAlert", null);
+                
                 return RedirectToAction(nameof(Create));
                 
             }
@@ -92,5 +98,9 @@ namespace ChapmanUniversity1._0.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        public List<Course> GetCourses()
+        {
+            return _unitOfWork.Courses.Get().ToList();
+        }
     }
 }

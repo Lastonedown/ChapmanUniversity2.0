@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using ChapmanUniversity1._0.DAL;
 using ChapmanUniversity1._0.Models;
 
@@ -6,11 +7,8 @@ namespace ChapmanUniversity1._0.Validators
 {
     public static class FacultyValidator
     {
-        private static readonly UnitOfWork UnitOfWork = new();
-
-        public static Faculty ValidateFacultyLogin(string facultyId, string password)
+        public static Faculty ValidateFacultyLogin(List<Faculty> facultyMembers,string facultyId, string password)
         {
-            var facultyMembers = UnitOfWork.FacultyMembers.Get().ToList();
             bool isPasswordValid = false;
 
             foreach (var t in facultyMembers)

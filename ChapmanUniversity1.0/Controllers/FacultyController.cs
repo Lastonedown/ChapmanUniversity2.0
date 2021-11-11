@@ -1,4 +1,6 @@
-﻿using ChapmanUniversity1._0.DAL;
+﻿using System.Collections.Generic;
+using System.Linq;
+using ChapmanUniversity1._0.DAL;
 using Microsoft.AspNetCore.Mvc;
 using ChapmanUniversity1._0.Models;
 using ChapmanUniversity1._0.Validators;
@@ -23,8 +25,9 @@ namespace ChapmanUniversity1._0.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Login(Faculty facultyLogin)
         {
+            var facultyMembers = GetFacultyMembers();
             TempData.Remove("InvalidFacultyLogin");
-            var facultyMember = FacultyValidator.ValidateFacultyLogin(facultyLogin.FacultyUserName.Trim(), facultyLogin.Password);
+            var facultyMember = FacultyValidator.ValidateFacultyLogin(facultyMembers,facultyLogin.FacultyUserName.Trim(), facultyLogin.Password);
 
             if (facultyMember == null)
             {
@@ -45,6 +48,11 @@ namespace ChapmanUniversity1._0.Controllers
             var facultyMember = _unitOfWork.FacultyMembers.GetById(id);
 
             return View(facultyMember);
+        }
+
+        public List<Faculty> GetFacultyMembers()
+        {
+            return _unitOfWork.FacultyMembers.Get().ToList();
         }
     }
 }

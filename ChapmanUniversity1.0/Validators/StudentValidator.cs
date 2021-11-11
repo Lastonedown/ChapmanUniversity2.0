@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using ChapmanUniversity1._0.DAL;
 using ChapmanUniversity1._0.Models;
 using PasswordEncryptDecrypt;
@@ -7,17 +8,14 @@ namespace ChapmanUniversity1._0.Validators
 {
     public static class StudentValidator
     {
-        private static readonly UnitOfWork UnitOfWork = new();
-
-        public static bool Validate(string email)
+        public static bool Validate(List<Student>students,string email)
         {
-            var studentList = UnitOfWork.Students.Get().ToList();
-            
-            if (!studentList.Any())
+
+            if (!students.Any())
             {
                 return false;
             }
-            foreach (var student in studentList)
+            foreach (var student in students)
             {
                 if(student.EmailAddress == email)
                 {
@@ -27,26 +25,25 @@ namespace ChapmanUniversity1._0.Validators
             return false;
         }
 
-        public static Student ValidateStudentLogin(string studentId, string password)
+        public static Student ValidateStudentLogin(List<Student>students,string studentId, string password)
         {
-            var students = UnitOfWork.Students.Get().ToList();
             bool isPasswordValid = false;
 
-            foreach (var t in students)
+            foreach (var student in students)
             {
-                string trimmedStudentId = t.StudentUserName.Trim();
+                string trimmedStudentId = student.StudentUserName.Trim();
 
                 if (trimmedStudentId.Equals(studentId))
                 {
 
-                    string savedPasswordHash = t.Password;
+                    string savedPasswordHash = student.Password;
 
                     isPasswordValid = DecryptPassword.Decrypt(savedPasswordHash, password);
                 }
 
                 if (isPasswordValid)
                 {
-                    return t;
+                    return student;
                 }
             }
 

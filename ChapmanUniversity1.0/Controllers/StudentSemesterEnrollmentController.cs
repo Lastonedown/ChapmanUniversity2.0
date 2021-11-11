@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using ChapmanUniversity1._0.DAL;
 using ChapmanUniversity1._0.Models;
@@ -20,10 +21,14 @@ namespace ChapmanUniversity1._0.Controllers
         public IActionResult Index()
         {
             TempData.Keep("studentId");
+            TempData.Remove("SemesterNotAvailable");
+            TempData.Remove("CourseEnrollmentSuccessAlert");
+            TempData.Remove("NoCoursesAvailable");
+            TempData.Remove("CourseAlreadyRegisteredAlert");
             var studentId = (int) TempData["studentId"];
 
-            var studentEnrollmentList = _unitOfWork.StudentSemesterEnrollments.Get();
-            var semesterList = _unitOfWork.Semesters.Get(includeProperties: "Course").ToList();
+            var studentEnrollmentList = GetStudentSemesterEnrollments();
+            var semesterList = GetSemesters();
 
             List<StudentSemesterEnrollment> enrolledCourses = new();
 
@@ -92,15 +97,19 @@ namespace ChapmanUniversity1._0.Controllers
                 return RedirectToAction(nameof(Create));
 
             }
-            var semesterExists = Validators.SemesterValidator.Validate(
+
+            var studentSemesterEnrollments = GetStudentSemesterEnrollments();
+            var semesters = GetSemesters();
+
+            var semesterExists = Validators.SemesterValidator.Validate(semesters,
                 studentSemesterEnrollment.Semester.Course.Id,
                 studentSemesterEnrollment.Semester.CourseSeason);
             
 
-            var semesterId = BusinessLogic.SemesterBusinessLogic.FindSemesterId(
+            var semesterId = Validators.SemesterValidator.FindSemesterId(semesters,
                 studentSemesterEnrollment.Semester.Course.Id, studentSemesterEnrollment.Semester.CourseSeason);
 
-            var studentEnrollmentExists = Validators.StudentEnrollmentValidator.Validate(studentId, semesterId);
+            var studentEnrollmentExists = Validators.StudentEnrollmentValidator.Validate(studentSemesterEnrollments,studentId, semesterId);
             
             if (!semesterExists)
             {
@@ -134,7 +143,8 @@ namespace ChapmanUniversity1._0.Controllers
         public ActionResult Delete(int id)
         {
             var enrolledCourseToBeDeleted = _unitOfWork.StudentSemesterEnrollments.GetById(id);
-            var semesterList = _unitOfWork.Semesters.Get(includeProperties: "Course").ToList();
+            var semesterList = GetSemesters();
+
             foreach (var semester in semesterList)
             {
                 if (enrolledCourseToBeDeleted.SemesterId == semester.Id)
@@ -160,5 +170,14 @@ namespace ChapmanUniversity1._0.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            public List<StudentSemesterEnrollment> GetStudentSemesterEnrollments()
+            {
+                return _unitOfWork.StudentSemesterEnrollments.Get().ToList();
+            }
+
+            public List<Semester> GetSemesters()
+            {
+                return _unitOfWork.Semesters.Get(includeProperties: "Course").ToList();
+        }
     }
 }

@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using ChapmanUniversity1._0.DAL;
 using Microsoft.AspNetCore.Mvc;
 using PasswordEncryptDecrypt;
@@ -45,7 +48,9 @@ namespace ChapmanUniversity1._0.Controllers
             Random random = new Random();
             Student student = new Student();
 
-            var studentExists = Validators.StudentValidator.Validate(student1.EmailAddress);
+            var students = GetStudents();
+
+            var studentExists = Validators.StudentValidator.Validate(students,student1.EmailAddress);
             if (ModelState.IsValid && !studentExists)
             {
 
@@ -87,8 +92,9 @@ namespace ChapmanUniversity1._0.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Login(StudentLogin studentLogin)
         {
-            var student =
-                Validators.StudentValidator.ValidateStudentLogin(studentLogin.UserName.Trim(), studentLogin.Password);
+            var students = GetStudents();
+
+            var student = Validators.StudentValidator.ValidateStudentLogin(students,studentLogin.UserName.Trim(), studentLogin.Password);
 
             TempData.Clear();
             if (student == null)
@@ -99,6 +105,11 @@ namespace ChapmanUniversity1._0.Controllers
 
             TempData.Add("StudentId", student.Id);
             return RedirectToAction("Details");
+        }
+
+        public List<Student> GetStudents()
+        {
+            return _unitOfWork.Students.Get().ToList();
         }
     }
 }

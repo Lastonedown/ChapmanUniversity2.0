@@ -1,23 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using ChapmanUniversity1._0.DAL;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using ChapmanUniversity1._0.Data;
 using ChapmanUniversity1._0.Models;
-
 namespace ChapmanUniversity1._0.Controllers
 {
     public class SemestersController : Controller
     {
-        private readonly UnitOfWork.UnitOfWork _unitOfWork = new UnitOfWork.UnitOfWork(new SchoolContext());
+        private readonly UnitOfWork _unitOfWork;
 
+        public SemestersController(UnitOfWork unitOfWork)
+        {
+            _unitOfWork = unitOfWork;
+        }
         public IActionResult Index()
         {
-
-            var semesterList =  _unitOfWork.Semesters.GetSemestersWithCourses();
+            TempData.Clear();
+            var semesterList = GetSemesters();
 
             return View(semesterList);
         }
@@ -35,6 +36,7 @@ namespace ChapmanUniversity1._0.Controllers
 
         public IActionResult Create(int id)
         {
+
             List<string> seasonsList = new List<string>(Enum.GetNames(typeof(Seasons)));
             ViewData["Seasons"] = new SelectList(seasonsList);
 
@@ -50,24 +52,28 @@ namespace ChapmanUniversity1._0.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Create(Semester semester)
         {
+            TempData.Remove("SemesterCreatedSuccessfullyAlert");
+            TempData.Remove("SemesterExistsAlert");
             List<string> seasonsList = new List<string>(Enum.GetNames(typeof(Seasons)));
             ViewData["Seasons"] = new SelectList(seasonsList);
 
-            var course = _unitOfWork.Courses.GetById(semester.CourseId);
-            var semesterExists = _unitOfWork.Semesters.SemesterExists(course.Id, semester.CourseSeason);
+            var semesters = GetSemesters();
+            var semesterExists = Validators.SemesterValidator.Validate(semesters,semester.CourseId, semester.CourseSeason);
+
+            Semester newSemester = new Semester()
+            {
+                CourseId = semester.Id,
+                CourseSeason = semester.CourseSeason
+            };
 
             if (!semesterExists)
             {
-                Semester newSemester = new Semester()
-                {
-                    CourseId = semester.CourseId,
-                    CourseSeason = semester.CourseSeason
-                };
-                
                 _unitOfWork.Semesters.Add(newSemester);
                 _unitOfWork.Complete();
+                TempData.Add("SemesterCreatedSuccessfullyAlert",null);
+                return RedirectToAction(nameof(Create));
             }
-            
+            TempData.Add("SemesterExistsAlert", null);
             return RedirectToAction(nameof(Create));
         }
 
@@ -109,6 +115,11 @@ namespace ChapmanUniversity1._0.Controllers
             _unitOfWork.Semesters.Remove(semester);
             _unitOfWork.Complete();
             return RedirectToAction(nameof(Index));
+        }
+
+        public List<Semester> GetSemesters()
+        {
+            return _unitOfWork.Semesters.Get(includeProperties: "Course").ToList();
         }
     }
 }

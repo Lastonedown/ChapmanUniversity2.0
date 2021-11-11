@@ -16,7 +16,6 @@ namespace ChapmanUniversity1._0.Models
         [Required]
         public int Id { get; set; }
 
-
         [ForeignKey("FK_Student")]
         public int StudentId { get; set; }
 
@@ -24,7 +23,6 @@ namespace ChapmanUniversity1._0.Models
         public int SemesterId { get; set; }
 
         public Semester Semester { get; set; }
-
         public Student Student { get; set; }
 
     }

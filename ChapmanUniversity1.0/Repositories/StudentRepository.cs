@@ -8,23 +8,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ChapmanUniversity1._0.Repositories
 {
-    public class StudentRepository : Repository<Student>,IStudentRepository
+    public class StudentRepository : Repository<Student>
     {
-
         public StudentRepository(SchoolContext context) : base(context)
         {
-        }
-        public SchoolContext SchoolContext => Context as SchoolContext;
 
-        public bool StudentEmailExists(string emailAddress)
-        {
-            foreach (var student in SchoolContext.Students)
-            {
-                if (student.EmailAddress == emailAddress)
-                {
-                    return true;
-                }
-            }  return false;
         }
     }
 }

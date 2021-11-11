@@ -1,23 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using ChapmanUniversity1._0.DAL;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using ChapmanUniversity1._0.Data;
 using ChapmanUniversity1._0.Models;
-using PasswordEncryptDecrypt;
+using ChapmanUniversity1._0.Validators;
 
 namespace ChapmanUniversity1._0.Controllers
 {
     public class FacultyController : Controller
     {
-        private readonly SchoolContext _context;
+        private readonly UnitOfWork _unitOfWork;
 
-        public FacultyController(SchoolContext context)
+        public FacultyController(UnitOfWork unitOfWork)
         {
-            _context = context;
+            _unitOfWork = unitOfWork;
         }
 
         public ActionResult Login()
@@ -27,9 +23,11 @@ namespace ChapmanUniversity1._0.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Login(Faculty facultyLogin)
+        public IActionResult Login(Faculty facultyLogin)
         {
-            var facultyMember = ValidateFacultyLogin(facultyLogin.FacultyUserName.Trim(), facultyLogin.Password);
+            var facultyMembers = GetFacultyMembers();
+            TempData.Remove("InvalidFacultyLogin");
+            var facultyMember = FacultyValidator.ValidateFacultyLogin(facultyMembers,facultyLogin.FacultyUserName.Trim(), facultyLogin.Password);
 
             if (facultyMember == null)
             {
@@ -42,52 +40,19 @@ namespace ChapmanUniversity1._0.Controllers
         }
 
 
-        public async Task<IActionResult> Details()
+        public IActionResult Details()
         {
-            var id = (int)TempData["FacultyId"];
+            var id = (int) TempData["FacultyId"];
             TempData.Keep("FacultyId");
 
-            var faculty = await _context.FacultyMembers
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (faculty == null)
-            {
-                return NotFound();
-            }
+            var facultyMember = _unitOfWork.FacultyMembers.GetById(id);
 
-            return View(faculty);
-
-
+            return View(facultyMember);
         }
 
-
-        // GET: Faculty/Edit/5
-
-        private bool FacultyExists(string userName)
+        public List<Faculty> GetFacultyMembers()
         {
-            return _context.FacultyMembers.Any(e => e.FacultyUserName == userName);
-        }
-
-        public Faculty ValidateFacultyLogin(string facultyId, string password)
-        {
-            var facultyMembers = _context.FacultyMembers.ToList();
-            bool isPasswordValid = false;
-
-            foreach (var t in facultyMembers)
-            {
-                string trimmedFacultyId = t.FacultyUserName.Trim();
-
-                if (trimmedFacultyId.Equals(facultyId) && password == t.Password)
-                {
-                    isPasswordValid = true;
-                }
-
-                if (isPasswordValid)
-                {
-                    return t;
-                }
-            }
-
-            return null;
+            return _unitOfWork.FacultyMembers.Get().ToList();
         }
     }
 }

@@ -29,5 +29,9 @@ namespace ChapmanUniversity1._0.Models
 
         public Course Course { get; set; }
 
+
+        public List<StudentSemesterEnrollment> StudentSemesterEnrollments { get; set; }
+
+
     }
 }

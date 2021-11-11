@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChapmanUniversity1._0.Migrations
 {
     [DbContext(typeof(SchoolContext))]
-    [Migration("20211103015848_init")]
+    [Migration("20211107233035_init")]
     partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -197,13 +197,13 @@ namespace ChapmanUniversity1._0.Migrations
             modelBuilder.Entity("ChapmanUniversity1._0.Models.StudentSemesterEnrollment", b =>
                 {
                     b.HasOne("ChapmanUniversity1._0.Models.Semester", "Semester")
-                        .WithMany()
+                        .WithMany("StudentSemesterEnrollments")
                         .HasForeignKey("SemesterId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("ChapmanUniversity1._0.Models.Student", "Student")
-                        .WithMany("SemesterEnrollments")
+                        .WithMany()
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -218,9 +218,9 @@ namespace ChapmanUniversity1._0.Migrations
                     b.Navigation("Semesters");
                 });
 
-            modelBuilder.Entity("ChapmanUniversity1._0.Models.Student", b =>
+            modelBuilder.Entity("ChapmanUniversity1._0.Models.Semester", b =>
                 {
-                    b.Navigation("SemesterEnrollments");
+                    b.Navigation("StudentSemesterEnrollments");
                 });
 #pragma warning restore 612, 618
         }

@@ -10,12 +10,12 @@ namespace ChapmanUniversity1._0.Repositories
 {
     public interface IRepository<TEntity> where TEntity : class
     {
-        TEntity GetById(int id);
-        IEnumerable<TEntity> GetAll();
-        IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> predicate);
+        TEntity GetById(object id);
+        IEnumerable<TEntity> Get(Expression<Func<TEntity, bool>> filter = null,
+            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
+            string includeProperties = "");
         void Add(TEntity entity);
-        void Remove(TEntity entity);
-
-
+        void Update(TEntity entity);
+        void Remove(Object id);
     }
 }

@@ -55,6 +55,5 @@ namespace ChapmanUniversity1._0.Models
         [DataType(DataType.Password)]
         public string Password { get; set; }
 
-        public ICollection<StudentSemesterEnrollment> SemesterEnrollments { get; set; }
     }
 }

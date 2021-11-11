@@ -1,31 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
-using System.Threading.Tasks;
+using ChapmanUniversity1._0.DAL;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using ChapmanUniversity1._0.Data;
 using ChapmanUniversity1._0.Models;
-using ChapmanUniversity1._0.Repositories;
-using Microsoft.AspNetCore.Razor.Language.Intermediate;
+
 
 namespace ChapmanUniversity1._0.Controllers
 {
 
     public class CoursesController : Controller
     {
-        private readonly UnitOfWork.UnitOfWork _unitOfWork = new(new SchoolContext());
+        private readonly UnitOfWork _unitOfWork;
 
+        public CoursesController(UnitOfWork unitOfWork)
+        {
+            _unitOfWork = unitOfWork;
+        }
+
+        
         public IActionResult Index()
         {
             TempData.Remove("CourseCreatedSuccessfullyAlert");
             TempData.Remove("CourseAlreadyCreatedAlert");
-            var courses =   _unitOfWork.Courses.GetAll();
-           
-           return View(courses);
+
+            var courses = GetCourses();
+            
+            return View(courses);
         }
 
         public IActionResult Details(int id)
@@ -40,7 +40,6 @@ namespace ChapmanUniversity1._0.Controllers
             return View();
         }
 
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create(Course course)
@@ -48,19 +47,20 @@ namespace ChapmanUniversity1._0.Controllers
             TempData.Remove("CourseCreatedSuccessfullyAlert");
             TempData.Remove("CourseAlreadyCreatedAlert");
 
-            var courseExists = _unitOfWork.Courses.CourseExists(course);
+            var courses = GetCourses();
 
+            var courseExists = Validators.CourseValidator.Validate(courses,course.CourseNumber);
 
             if (!courseExists)
-            {
-                 _unitOfWork.Courses.Add(course); 
-                _unitOfWork.Complete();
-                _unitOfWork.Dispose();
+            { 
+                _unitOfWork.Courses.Add(course);
+                _unitOfWork.Complete(); 
+
                 TempData.Add("CourseCreatedSuccessfullyAlert", null);
-
+                
                 return RedirectToAction(nameof(Create));
+                
             }
-
             TempData.Add("CourseAlreadyCreatedAlert", null);
             return RedirectToAction(nameof(Create));
         }
@@ -90,13 +90,17 @@ namespace ChapmanUniversity1._0.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(Course course)
+        public IActionResult DeleteConfirmed(int id)
         {
 
-            _unitOfWork.Courses.Remove(course);
+            _unitOfWork.Courses.Remove(id);
             _unitOfWork.Complete();
             return RedirectToAction(nameof(Index));
         }
 
+        public List<Course> GetCourses()
+        {
+            return _unitOfWork.Courses.Get().ToList();
+        }
     }
 }
